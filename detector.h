@@ -19,8 +19,10 @@ public:
     Detector();
     ~Detector();
     void detect(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background);
+    void drawFrame(cv::Mat frame, cv::Mat background);
     void findNext();
     void saveToDxf(char *filename);
+    void moveContour(cv::Rect& area, int dx, int dy);
 
 protected:
     std::vector<cv::Point> findExternalContour(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background);

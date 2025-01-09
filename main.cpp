@@ -5,12 +5,26 @@
 #include "cvui.h"
 #include "detector.h"
 
-#define KEY_ESCAPE 27      // ESC 键
-#define KEY_SPACE 32       // 空格键
-#define KEY_RETURN 13      // 回车键
+#define KEY_ESCAPE	27			// ESC 键
+#define KEY_SPACE	32			// 空格键
+#define KEY_RETURN	13			// 回车键
+#define KEY_LEFT	0x250000	// 向左
+#define KEY_TOP		0x260000	// 向上
+#define KEY_RIGHT	0x270000	// 向右
+#define KEY_BOTTOM	0x280000	// 向下
 #define CV_EDIT_VIEW	"镜片"
 
-cv::Point pt1, pt2;
+//打印日志到Output窗口
+void trace(char* fmt, ...) {
+	char out[1024];
+	va_list body;
+	va_start(body, fmt);
+	vsprintf(out, fmt, body);
+	va_end(body);
+	OutputDebugStringA(out);
+}
+
+cv::Rect selectRect;
 bool isEditSelectArea = false;
 void mouseCallback(int event, int x, int y, int flags, void* userdata) {
 	cv::Rect* editArea = static_cast<cv::Rect*>(userdata);
@@ -22,17 +36,26 @@ void mouseCallback(int event, int x, int y, int flags, void* userdata) {
 
 	if (event == cv::EVENT_LBUTTONDOWN) {
 		isEditSelectArea = true;
-		pt1 = cv::Point(x, y);  // 记录起始点
-		pt2 = cv::Point(x, y);
+		selectRect = cv::Rect(x, y, 0, 0);
 	}
 	else if (event == cv::EVENT_MOUSEMOVE) {
 		if (isEditSelectArea) {
-			pt2 = cv::Point(x, y);  // 更新终点位置
+			int rectX = std::min(selectRect.x, x);
+			int rectY = std::min(selectRect.y, y);
+			int rectWidth = std::abs(x - selectRect.x);
+			int rectHeight = std::abs(y - selectRect.y);
+
+			selectRect = cv::Rect(rectX, rectY, rectWidth, rectHeight);
 		}
 	}
 	else if (event == cv::EVENT_LBUTTONUP) {
 		isEditSelectArea = false;
-		pt2 = cv::Point(x, y);  // 记录松开鼠标时的终点
+		int rectX = std::min(selectRect.x, x);
+		int rectY = std::min(selectRect.y, y);
+		int rectWidth = std::abs(x - selectRect.x);
+		int rectHeight = std::abs(y - selectRect.y);
+
+		selectRect = cv::Rect(rectX, rectY, rectWidth, rectHeight);
 	}
 }
 
@@ -56,6 +79,9 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer)
 
 			detector.detect(frame.clone(), (medianBlurKSize << 1) + 1, morphKSize, background);
 		}
+		else {
+			detector.drawFrame(frame.clone(), background);
+		}
 
 		cv::Mat tmp = background.clone();
 		cvui::window(tmp, settingX, settingY, settingWidth, settingHeight, "Setting");
@@ -76,19 +102,35 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer)
 		}
 		cvui::update();
 
-		cv::rectangle(tmp, pt1, pt2, cv::Scalar(0, 255, 0), 1);
+		cv::rectangle(tmp, selectRect, cv::Scalar(255, 0, 255), 2);
 		cv::imshow(CV_EDIT_VIEW, tmp);
 
 		if (writer.isOpened()) {
 			writer.write(tmp);
 		}
 
-		int key = cv::waitKey(20);
+		int key = cv::waitKeyEx(20);
 		switch (key) {
 		case KEY_ESCAPE:
 		case KEY_RETURN:
 		case KEY_SPACE:
 			return key;
+
+		case KEY_LEFT:
+			detector.moveContour(selectRect, -1, 0);
+			break;
+
+		case KEY_RIGHT:
+			detector.moveContour(selectRect, 1, 0);
+			break;
+
+		case KEY_TOP:
+			detector.moveContour(selectRect, 0, -1);
+			break;
+
+		case KEY_BOTTOM:
+			detector.moveContour(selectRect, 0, 1);
+			break;
 		}
 	}
 }
@@ -144,7 +186,7 @@ int main(int argc, char* argv[]) {
 		cv::resize(frame, frame, cv::Size(cvRound(frame.cols / scale), cvRound(frame.rows / scale)), 0, 0, cv::INTER_LINEAR);
 
 		if(cv::getWindowProperty(CV_EDIT_VIEW, cv::WND_PROP_VISIBLE)) {
-			pt1.x = 0; pt1.y = 0; pt2.x = 0; pt2.y = 0;
+			selectRect = cv::Rect();
 			cv::Rect editArea = { 0,0,frame.cols,frame.rows };
 			cv::setMouseCallback(CV_EDIT_VIEW, mouseCallback, &editArea);
 		}

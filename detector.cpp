@@ -74,6 +74,18 @@ void Detector::drawContour(cv::Mat background, std::vector<cv::Point> contour) {
     }
 }
 
+void Detector::moveContour(cv::Rect& area, int dx, int dy) {
+    for (auto& pt : currentContour) {
+        if (area.contains(pt)) {
+            pt.x += dx;
+            pt.y += dy;
+        }
+    }
+
+    area.x += dx;
+    area.y += dy;
+}
+
 std::vector<cv::Point> smoothContourWithSlidingWindow(const std::vector<cv::Point>& contour, int windowSize = 5) {
     std::vector<cv::Point> smoothedContour;
     int n = contour.size();
@@ -263,28 +275,26 @@ void Detector::detect(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Ma
 
     if(!currentContour.empty()) drawContour(frame, currentContour);
 
-    /*
-    std::vector<cv::Point> externalContour = findExternalContour(frame, medianBlurKSize, morphKSize);
-    if (externalContour.size() > 0) {
-        cv::drawContours(frame, std::vector<std::vector<cv::Point>>{externalContour}, -1, cv::Scalar(0, 0, 255), 2);
-        
-        std::vector<cv::Point> contour = scaleContour(externalContour, 10);
-        if (contour.size() > 0) {
-            std::vector<cv::Point> innerContour = findContourInMask(frame, 7, 9, contour, background);
-            if (innerContour.size()) {
-                cv::drawContours(frame, std::vector<std::vector<cv::Point>>{innerContour}, -1, cv::Scalar(255, 0, 0), 2);
-            }
-            
-            cv::drawContours(frame, std::vector<std::vector<cv::Point>>{contour}, -1, cv::Scalar(0, 255, 0), 2);//放到后面，避免影响内轮廓检测
-        }
-    }*/
-
     fps_.toc();
 
     char szText[_MAX_PATH] = { 0 };
     sprintf(szText, "%s", fps_.toString().c_str());
     cv::putText(frame, szText, cv::Point(0, frame.rows - 3), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 128, 255));
     
+    frame.copyTo(background(cv::Rect(0, 0, frame.cols, frame.rows)));
+}
+
+void Detector::drawFrame(cv::Mat frame, cv::Mat background)
+{
+    fps_.tic();
+
+    if (!eyeglassContours.empty()) cv::drawContours(frame, eyeglassContours, -1, cv::Scalar(0, 255, 0), 2);
+    if (!currentContour.empty()) drawContour(frame, currentContour);
+
+    char szText[_MAX_PATH] = { 0 };
+    sprintf(szText, "%s", fps_.toString().c_str());
+    cv::putText(frame, szText, cv::Point(0, frame.rows - 3), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 128, 255));
+
     frame.copyTo(background(cv::Rect(0, 0, frame.cols, frame.rows)));
 }
 
