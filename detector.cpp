@@ -86,6 +86,15 @@ void Detector::moveContour(cv::Rect& area, int dx, int dy) {
     area.y += dy;
 }
 
+void Detector::deleteContour(cv::Rect& area) {
+    currentContour.erase(std::remove_if(currentContour.begin(), currentContour.end(),
+        [&area](const cv::Point& pt) {
+            return area.contains(pt);
+        }),
+        currentContour.end());
+}
+
+
 std::vector<cv::Point> smoothContourWithSlidingWindow(const std::vector<cv::Point>& contour, int windowSize = 5) {
     std::vector<cv::Point> smoothedContour;
     int n = contour.size();

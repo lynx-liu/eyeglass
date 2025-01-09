@@ -23,6 +23,7 @@ public:
     void findNext();
     void saveToDxf(char *filename);
     void moveContour(cv::Rect& area, int dx, int dy);
+    void deleteContour(cv::Rect& area);
 
 protected:
     std::vector<cv::Point> findExternalContour(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background);

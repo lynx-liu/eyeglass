@@ -12,6 +12,7 @@
 #define KEY_TOP		0x260000	// 向上
 #define KEY_RIGHT	0x270000	// 向右
 #define KEY_BOTTOM	0x280000	// 向下
+#define KEY_DEL		0x2E0000	// 删除
 #define CV_EDIT_VIEW	"镜片"
 
 //打印日志到Output窗口
@@ -110,6 +111,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer)
 		}
 
 		int key = cv::waitKeyEx(20);
+		trace("key: %d\r\n", key);
 		switch (key) {
 		case KEY_ESCAPE:
 		case KEY_RETURN:
@@ -130,6 +132,10 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer)
 
 		case KEY_BOTTOM:
 			detector.moveContour(selectRect, 0, 1);
+			break;
+
+		case KEY_DEL:
+			detector.deleteContour(selectRect);
 			break;
 		}
 	}
