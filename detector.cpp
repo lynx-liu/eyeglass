@@ -7,10 +7,19 @@
 
 #include "stdafx.h"
 #include "dxf.h"
+#include "Contour.h"
 #include "detector.h"
 
-Detector::Detector()
+#define KEY_LEFT	0x250000	// 向左
+#define KEY_TOP		0x260000	// 向上
+#define KEY_RIGHT	0x270000	// 向右
+#define KEY_BOTTOM	0x280000	// 向下
+#define KEY_DEL		0x2E0000	// 删除
+
+Detector::Detector(cv::Rect rect)
 {
+    editArea = rect;
+    isEditSelectArea = false;
     currentContour.clear();
     eyeglassContours.clear();
 }
@@ -20,170 +29,6 @@ Detector::~Detector()
     eyeglassContours.clear();
     currentContour.clear();
 }
-
-std::vector<cv::Point> Detector::scaleContour(const std::vector<cv::Point>& contour, int N) {
-    // 使用点偏移直接缩放轮廓N个像素点，N<0为放大
-    cv::Point2f center(0, 0);
-    for (const auto& point : contour) {
-        center.x += point.x;
-        center.y += point.y;
-    }
-    center.x /= contour.size();
-    center.y /= contour.size();
-
-    std::vector<cv::Point> scaleContour;
-    scaleContour.reserve(contour.size());
-    for (const auto& point : contour) {
-        cv::Point2f direction = cv::Point2f(point) - center; // 转换为 cv::Point2f
-        float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
-        if (length > 0) {
-            direction.x /= length;
-            direction.y /= length;
-        }
-        cv::Point newPoint = point - cv::Point(cvRound(direction.x * N), cvRound(direction.y * N)); // 转换回整数
-        scaleContour.push_back(newPoint);
-    }
-
-    std::vector<cv::Point> hull;
-    cv::convexHull(scaleContour, hull);
-    return hull;
-}
-
-
-int Detector::findMaxContourId(std::vector<std::vector<cv::Point> > contours)
-{
-    int index = 0;
-    int maxArea = cv::minAreaRect(contours[index]).boundingRect().area();
-    for (int i = 1; i < contours.size(); i++) {
-        int area = cv::minAreaRect(contours[i]).boundingRect().area();
-        if (area > maxArea) {
-            index = i;
-            maxArea = area;
-        }
-    }
-    return index;
-}
-
-void Detector::drawContour(cv::Mat background, std::vector<cv::Point> contour) {
-    for (size_t i = 0; i < contour.size() - 1; ++i) {
-        const cv::Point& p1 = contour[i];
-        const cv::Point& p2 = contour[(i + 1) % contour.size()];
-        cv::line(background, p1, p2, cv::Scalar(255, 0, 0), 2);
-
-        cv::circle(background, p1, 3, cv::Scalar(0, 0, 255), -1);
-    }
-}
-
-void Detector::moveContour(cv::Rect& area, int dx, int dy) {
-    for (auto& pt : currentContour) {
-        if (area.contains(pt)) {
-            pt.x += dx;
-            pt.y += dy;
-        }
-    }
-
-    area.x += dx;
-    area.y += dy;
-}
-
-void Detector::deleteContour(cv::Rect& area) {
-    currentContour.erase(std::remove_if(currentContour.begin(), currentContour.end(),
-        [&area](const cv::Point& pt) {
-            return area.contains(pt);
-        }),
-        currentContour.end());
-}
-
-
-std::vector<cv::Point> smoothContourWithSlidingWindow(const std::vector<cv::Point>& contour, int windowSize = 5) {
-    std::vector<cv::Point> smoothedContour;
-    int n = contour.size();
-
-    for (int i = 0; i < n; ++i) {
-        int sumX = 0, sumY = 0, count = 0;
-
-        // 滑动窗口内的平均
-        for (int j = -windowSize; j <= windowSize; ++j) {
-            int idx = (i + j + n) % n; // 环形轮廓，取模处理
-            sumX += contour[idx].x;
-            sumY += contour[idx].y;
-            ++count;
-        }
-
-        smoothedContour.push_back(cv::Point(sumX / count, sumY / count));
-    }
-
-    // 闭合轮廓：将最后一个点连接到第一个点
-    smoothedContour.push_back(smoothedContour[0]);
-    return smoothedContour;
-}
-
-// 高斯平滑
-std::vector<cv::Point> gaussianSmooth(const std::vector<cv::Point>& contour, int kernelSize = 5, double sigma = 1.0) {
-    cv::Mat pointsMat(contour.size(), 1, CV_32FC2);
-    for (size_t i = 0; i < contour.size(); ++i) {
-        pointsMat.at<cv::Vec2f>(i, 0) = cv::Vec2f(contour[i].x, contour[i].y);
-    }
-
-    // 高斯平滑
-    cv::Mat smoothedMat;
-    cv::GaussianBlur(pointsMat, smoothedMat, cv::Size(kernelSize, kernelSize), sigma);
-
-    std::vector<cv::Point> smoothedContour;
-    for (int i = 0; i < smoothedMat.rows; ++i) {
-        cv::Point p(static_cast<int>(std::round(smoothedMat.at<cv::Vec2f>(i, 0)[0])),
-            static_cast<int>(std::round(smoothedMat.at<cv::Vec2f>(i, 0)[1])));
-        smoothedContour.push_back(p);
-    }
-
-    // 闭合轮廓：将最后一个点连接到第一个点
-    smoothedContour.push_back(smoothedContour[0]);
-    return smoothedContour;
-}
-
-std::vector<cv::Point> smoothContourWithBezier(const std::vector<cv::Point>& contour, int numPoints = 250, int numThreads = 4) {
-    std::vector<cv::Point> smoothedContour;
-    std::vector<std::future<std::vector<cv::Point>>> futures;
-
-    // 分段计算
-    int segmentSize = contour.size() / numThreads;
-    for (int t = 0; t < numThreads; ++t) {
-        int start = t * segmentSize;
-        int end = (t == numThreads - 1) ? contour.size() : (t + 1) * segmentSize;
-
-        // 添加捕获的变量
-        futures.push_back(std::async(std::launch::async, [start, end, &contour, numPoints, numThreads]() {
-            std::vector<cv::Point> segment;
-            auto bezierPoint = [](const std::vector<cv::Point>& points, double t) -> cv::Point2f {
-                size_t n = points.size();
-                std::vector<cv::Point2f> temp(points.begin(), points.end());
-                for (size_t k = 1; k < n; ++k) {
-                    for (size_t i = 0; i < n - k; ++i) {
-                        temp[i] = temp[i] * (1.0 - t) + temp[i + 1] * t;
-                    }
-                }
-                return temp[0];
-            };
-
-            for (int i = 0; i < numPoints / numThreads; ++i) {
-                double t = static_cast<double>(i) / (numPoints / numThreads - 1);
-                segment.push_back(bezierPoint(std::vector<cv::Point>(contour.begin() + start, contour.begin() + end), t));
-            }
-            return segment;
-            }));
-    }
-
-    // 合并结果
-    for (auto& f : futures) {
-        auto segment = f.get();
-        smoothedContour.insert(smoothedContour.end(), segment.begin(), segment.end());
-    }
-
-    // 闭合轮廓：将最后一个点连接到第一个点
-    smoothedContour.push_back(smoothedContour[0]);
-    return smoothedContour;
-}
-
 
 std::vector<cv::Point> Detector::findExternalContour(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background) {
     cv::Mat gray;
@@ -299,6 +144,7 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background)
 
     if (!eyeglassContours.empty()) cv::drawContours(frame, eyeglassContours, -1, cv::Scalar(0, 255, 0), 2);
     if (!currentContour.empty()) drawContour(frame, currentContour);
+    cv::rectangle(frame, selectRect, cv::Scalar(255, 0, 255), 2);
 
     char szText[_MAX_PATH] = { 0 };
     sprintf(szText, "%s", fps_.toString().c_str());
@@ -318,4 +164,65 @@ void Detector::saveToDxf(char *filename) {
     std::vector<std::vector<cv::Point>> contours = eyeglassContours;
     contours.emplace_back(currentContour);
     Dxf::SaveContoursToFile(contours, filename);
+}
+
+void Detector::onKey(int key) {
+    switch (key) {
+    case KEY_LEFT:
+        moveContour(currentContour, selectRect, -1, 0);
+        break;
+
+    case KEY_RIGHT:
+        moveContour(currentContour, selectRect, 1, 0);
+        break;
+
+    case KEY_TOP:
+        moveContour(currentContour, selectRect, 0, -1);
+        break;
+
+    case KEY_BOTTOM:
+        moveContour(currentContour, selectRect, 0, 1);
+        break;
+
+    case KEY_DEL:
+        deleteContour(currentContour, selectRect);
+        break;
+
+    case 'i':
+    case 'I':
+        insertPoint(currentContour, mousePoint);
+        break;
+    }
+}
+
+void Detector::onMouse(int event, int x, int y) {
+    mousePoint = cv::Point(x, y);
+
+    if (event == cv::EVENT_LBUTTONDOWN) {
+        isEditSelectArea = true;
+        selectRect = cv::Rect(x, y, 0, 0);
+    }
+    else if (event == cv::EVENT_MOUSEMOVE) {
+        if (isEditSelectArea) {
+            int rectX = std::min(selectRect.x, x);
+            int rectY = std::min(selectRect.y, y);
+            int rectWidth = std::abs(x - selectRect.x);
+            int rectHeight = std::abs(y - selectRect.y);
+
+            selectRect = cv::Rect(rectX, rectY, rectWidth, rectHeight);
+        }
+    }
+    else if (event == cv::EVENT_LBUTTONUP) {
+        isEditSelectArea = false;
+        int rectX = std::min(selectRect.x, x);
+        int rectY = std::min(selectRect.y, y);
+        int rectWidth = std::abs(x - selectRect.x);
+        int rectHeight = std::abs(y - selectRect.y);
+
+        selectRect = cv::Rect(rectX, rectY, rectWidth, rectHeight);
+    }
+}
+
+cv::Rect Detector::getEditArea() {
+    return editArea;
 }

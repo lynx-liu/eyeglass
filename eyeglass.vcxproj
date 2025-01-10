@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Contour.cpp" />
     <ClCompile Include="detector.cpp" />
     <ClCompile Include="dxf.cpp" />
     <ClCompile Include="main.cpp" />
@@ -162,6 +163,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Contour.h" />
     <ClInclude Include="cvui.h" />
     <ClInclude Include="detector.h" />
     <ClInclude Include="dxf.h" />

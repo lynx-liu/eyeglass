@@ -10,31 +10,32 @@
 
 #include <vector>
 #include <thread>
-#include <future>
 
 #include "fps.hpp"
 
 class Detector {
 public:
-    Detector();
+    Detector(cv::Rect rect);
     ~Detector();
     void detect(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background);
     void drawFrame(cv::Mat frame, cv::Mat background);
     void findNext();
     void saveToDxf(char *filename);
-    void moveContour(cv::Rect& area, int dx, int dy);
-    void deleteContour(cv::Rect& area);
+    void onKey(int key);
+    void onMouse(int event, int x, int y);
+    cv::Rect getEditArea();
 
 protected:
     std::vector<cv::Point> findExternalContour(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background);
     std::vector<cv::Point> findContourInMask(cv::Mat frame, int medianBlurKSize, int morphKSize, const std::vector<cv::Point>& contour, cv::Mat background);
 
 private:
+    cv::Rect editArea;
+    cv::Rect selectRect;
+    bool isEditSelectArea;
+    cv::Point mousePoint;
     std::vector<cv::Point> currentContour;
     std::vector<std::vector<cv::Point>> eyeglassContours;
-    static std::vector<cv::Point> scaleContour(const std::vector<cv::Point>& contour, int N);
-    static int findMaxContourId(std::vector<std::vector<cv::Point> > contours);
-    static void drawContour(cv::Mat background, std::vector<cv::Point> contour);
     FPS fps_ = FPS();
 };
 
