@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
 				break;
 		}
 
-		double scale = frame.rows / 960.0;
+		double scale = frame.rows / std::min(960.0, screenSize.height*1.0);
 		cv::resize(frame, frame, cv::Size(cvRound(frame.cols / scale), cvRound(frame.rows / scale)), 0, 0, cv::INTER_LINEAR);
 
 		if (refreshUI(frame, background, writer) == KEY_ESCAPE)
