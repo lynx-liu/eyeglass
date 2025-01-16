@@ -146,6 +146,8 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background)
     if (!currentContour.empty()) drawContour(frame, currentContour);
     cv::rectangle(frame, selectRect, cv::Scalar(255, 0, 255), 2);
 
+    fps_.toc();
+
     char szText[_MAX_PATH] = { 0 };
     sprintf(szText, "%s", fps_.toString().c_str());
     cv::putText(frame, szText, cv::Point(0, frame.rows - 3), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 128, 255));
