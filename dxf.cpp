@@ -18,7 +18,7 @@ Dxf::~Dxf()
 
 }
 
-bool Dxf::SaveContoursToFile(std::vector<std::vector<cv::Point>> contours, char *filename) {
+bool Dxf::SaveContoursToFile(std::vector<std::vector<cv::Point2f>> contours, char *filename) {
     // 打开DXF文件
     std::ofstream dxfFile(filename);
     if (!dxfFile.is_open()) {
@@ -42,7 +42,7 @@ bool Dxf::SaveContoursToFile(std::vector<std::vector<cv::Point>> contours, char 
     return true;
 }
 
-void Dxf::WriteContourToDxf(std::ofstream& dxfFile, const std::vector<cv::Point>& contour) {
+void Dxf::WriteContourToDxf(std::ofstream& dxfFile, const std::vector<cv::Point2f>& contour) {
     dxfFile << "  0\n";
     dxfFile << "POLYLINE\n";
     dxfFile << "  8\n";

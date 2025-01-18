@@ -30,7 +30,7 @@ Detector::~Detector()
     currentContour.clear();
 }
 
-std::vector<cv::Point> Detector::findExternalContour(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background) {
+std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background) {
     cv::Mat gray;
     cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
@@ -60,12 +60,12 @@ std::vector<cv::Point> Detector::findExternalContour(cv::Mat frame, int medianBl
 
     if (!contours.empty()) {
         int maxExternal = findMaxContourId(contours);
-        return smoothContourWithBezier(gaussianSmooth(smoothContourWithSlidingWindow(contours[maxExternal])));
+        return smoothContourWithBezier(gaussianSmooth(smoothContourWithBilateral(convertToPoint2f(contours[maxExternal]))));
     }
     return {};
 }
 
-std::vector<cv::Point> Detector::findContourInMask(cv::Mat frame, int medianBlurKSize, int morphKSize, const std::vector<cv::Point>& contour, cv::Mat background) {
+std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, int medianBlurKSize, int morphKSize, const std::vector<cv::Point>& contour, cv::Mat background) {
     cv::Mat gray;
     cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
@@ -103,7 +103,7 @@ std::vector<cv::Point> Detector::findContourInMask(cv::Mat frame, int medianBlur
 
     if (!contours.empty()) {
         int maxExternal = findMaxContourId(contours);
-        return smoothContourWithBezier(gaussianSmooth(smoothContourWithSlidingWindow(contours[maxExternal])));
+        return smoothContourWithBezier(gaussianSmooth(smoothContourWithBilateral(convertToPoint2f(contours[maxExternal]))));
     }
     return {};
 }
@@ -116,7 +116,7 @@ void Detector::detect(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Ma
         currentContour = findExternalContour(frame, medianBlurKSize, morphKSize, background);
     }
     else {
-        cv::drawContours(frame, eyeglassContours, -1, cv::Scalar(0, 255, 0), 2);
+        drawContours(frame, eyeglassContours, cv::Scalar(0, 255, 0));
 
         std::vector<cv::Point> contour = scaleContour(eyeglassContours.back(), 10);
         if (!contour.empty()) {
@@ -127,7 +127,7 @@ void Detector::detect(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Ma
         }
     }
 
-    if(!currentContour.empty()) drawContour(frame, currentContour);
+    if(!currentContour.empty()) drawContour(frame, currentContour, cv::Scalar(255, 0, 0), true);
 
     fps_.toc();
 
@@ -142,8 +142,8 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background)
 {
     fps_.tic();
 
-    if (!eyeglassContours.empty()) cv::drawContours(frame, eyeglassContours, -1, cv::Scalar(0, 255, 0), 2);
-    if (!currentContour.empty()) drawContour(frame, currentContour);
+    if (!eyeglassContours.empty()) drawContours(frame, eyeglassContours, cv::Scalar(0, 255, 0));
+    if (!currentContour.empty()) drawContour(frame, currentContour, cv::Scalar(255, 0, 0), true);
     cv::rectangle(frame, selectRect, cv::Scalar(255, 0, 255), 2);
 
     fps_.toc();
@@ -163,7 +163,7 @@ void Detector::findNext() {
 }
 
 void Detector::saveToDxf(char *filename) {
-    std::vector<std::vector<cv::Point>> contours = eyeglassContours;
+    std::vector<std::vector<cv::Point2f>> contours = eyeglassContours;
     contours.emplace_back(currentContour);
     Dxf::SaveContoursToFile(contours, filename);
 }

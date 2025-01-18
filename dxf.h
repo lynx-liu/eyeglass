@@ -14,10 +14,10 @@ class Dxf {
 public:
     Dxf();
     ~Dxf();
-    static bool SaveContoursToFile(std::vector<std::vector<cv::Point>> contours, char* filename);
+    static bool SaveContoursToFile(std::vector<std::vector<cv::Point2f>> contours, char* filename);
 
 private:
-    static void WriteContourToDxf(std::ofstream& dxfFile, const std::vector<cv::Point>& contour);
+    static void WriteContourToDxf(std::ofstream& dxfFile, const std::vector<cv::Point2f>& contour);
 };
 
 #endif // DXF_H

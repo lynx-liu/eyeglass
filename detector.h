@@ -26,16 +26,16 @@ public:
     cv::Rect getEditArea();
 
 protected:
-    std::vector<cv::Point> findExternalContour(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background);
-    std::vector<cv::Point> findContourInMask(cv::Mat frame, int medianBlurKSize, int morphKSize, const std::vector<cv::Point>& contour, cv::Mat background);
+    std::vector<cv::Point2f> findExternalContour(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background);
+    std::vector<cv::Point2f> findContourInMask(cv::Mat frame, int medianBlurKSize, int morphKSize, const std::vector<cv::Point>& contour, cv::Mat background);
 
 private:
     cv::Rect editArea;
     cv::Rect selectRect;
     bool isEditSelectArea;
     cv::Point mousePoint;
-    std::vector<cv::Point> currentContour;
-    std::vector<std::vector<cv::Point>> eyeglassContours;
+    std::vector<cv::Point2f> currentContour;
+    std::vector<std::vector<cv::Point2f>> eyeglassContours;
     FPS fps_ = FPS();
 };
 
