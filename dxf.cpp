@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////
 //				date: 2024.12.28
-//				author: ÁõÁ¢Ïò  
+//				author: åˆ˜ç«‹å‘  
 //				email: 13651417694@126.com
 //				qq: 515311445
 ///////////////////////////////////////////////////
@@ -19,25 +19,25 @@ Dxf::~Dxf()
 }
 
 bool Dxf::SaveContoursToFile(std::vector<std::vector<cv::Point2f>> contours, char *filename) {
-    // ´ò¿ªDXFÎÄ¼ş
+    // æ‰“å¼€DXFæ–‡ä»¶
     std::ofstream dxfFile(filename);
     if (!dxfFile.is_open()) {
         std::cerr << "Could not open the DXF file" << std::endl;
         return false;
     }
 
-    // Ğ´ÈëDXFÎÄ¼şÍ·
+    // å†™å…¥DXFæ–‡ä»¶å¤´
     dxfFile << "  0\nSECTION\n  2\nHEADER\n  0\nENDSEC\n  0\nSECTION\n  2\nENTITIES\n";
 
-    // Ğ´ÈëÂÖÀª
+    // å†™å…¥è½®å»“
     for (const auto& contour : contours) {
         WriteContourToDxf(dxfFile, contour);
     }
 
-    // Ğ´ÈëDXFÎÄ¼şÎ²
+    // å†™å…¥DXFæ–‡ä»¶å°¾
     dxfFile << "  0\nENDSEC\n  0\nEOF\n";
 
-    // ¹Ø±ÕDXFÎÄ¼ş
+    // å…³é—­DXFæ–‡ä»¶
     dxfFile.close();
     return true;
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////
 //				date: 2025.01.10
-//				author: ÁõÁ¢Ïò  
+//				author: åˆ˜ç«‹å‘  
 //				email: 13651417694@126.com
 //				qq: 515311445
 ///////////////////////////////////////////////////
@@ -9,15 +9,15 @@
 #include "Contour.h"
 #include <future>
 
-// ¼ÆËãÁ½µãÖ®¼äµÄÅ·¼¸ÀïµÃ¾àÀë
+// è®¡ç®—ä¸¤ç‚¹ä¹‹é—´çš„æ¬§å‡ é‡Œå¾—è·ç¦»
 inline double distance(const cv::Point2f& pt1, const cv::Point2f& pt2) {
     return std::sqrt(std::pow(pt2.x - pt1.x, 2) + std::pow(pt2.y - pt1.y, 2));
 }
 
-// º¯Êı¶¨Òå£º½« std::vector<cv::Point> ×ª»»Îª std::vector<cv::Point2f>
+// å‡½æ•°å®šä¹‰ï¼šå°† std::vector<cv::Point> è½¬æ¢ä¸º std::vector<cv::Point2f>
 std::vector<cv::Point2f> convertToPoint2f(const std::vector<cv::Point>& contour) {
     std::vector<cv::Point2f> result;
-    result.reserve(contour.size()); // Ô¤·ÖÅä¿Õ¼äÒÔÌá¸ßĞÔÄÜ
+    result.reserve(contour.size()); // é¢„åˆ†é…ç©ºé—´ä»¥æé«˜æ€§èƒ½
 
     for (const auto& point : contour) {
         result.emplace_back(point);
@@ -26,7 +26,7 @@ std::vector<cv::Point2f> convertToPoint2f(const std::vector<cv::Point>& contour)
     return result;
 }
 
-// Ê¹ÓÃµãÆ«ÒÆÖ±½ÓËõ·ÅÂÖÀªN¸öÏñËØµã£¬N<0Îª·Å´ó
+// ä½¿ç”¨ç‚¹åç§»ç›´æ¥ç¼©æ”¾è½®å»“Nä¸ªåƒç´ ç‚¹ï¼ŒN<0ä¸ºæ”¾å¤§
 std::vector<cv::Point> scaleContour(const std::vector<cv::Point2f>& contour, int N) {
     cv::Point2f center(0, 0);
     for (const auto& point : contour) {
@@ -96,36 +96,36 @@ void deleteContour(std::vector<cv::Point2f>& contour, cv::Rect& area) {
         contour.end());
 }
 
-// ¼ì²éĞÂµãÊÇ·ñÔÚÁ½¸öµãÖ®¼ä£¨ÔÚË®Æ½»ò´¹Ö±·½ÏòÉÏÂú×ãÖĞ¼äÎ»ÖÃ£©
+// æ£€æŸ¥æ–°ç‚¹æ˜¯å¦åœ¨ä¸¤ä¸ªç‚¹ä¹‹é—´ï¼ˆåœ¨æ°´å¹³æˆ–å‚ç›´æ–¹å‘ä¸Šæ»¡è¶³ä¸­é—´ä½ç½®ï¼‰
 bool isPointBetween(const cv::Point2f& p1, const cv::Point2f& p2, const cv::Point2f& newPoint) {
-    // ¼ì²éË®Æ½ºÍ´¹Ö±·½ÏòÊÇ·ñÂú×ãÖĞ¼äÌõ¼ş
+    // æ£€æŸ¥æ°´å¹³å’Œå‚ç›´æ–¹å‘æ˜¯å¦æ»¡è¶³ä¸­é—´æ¡ä»¶
     bool isHorizontal = (p1.x <= newPoint.x && newPoint.x <= p2.x) || (p2.x <= newPoint.x && newPoint.x <= p1.x);
     bool isVertical = (p1.y <= newPoint.y && newPoint.y <= p2.y) || (p2.y <= newPoint.y && newPoint.y <= p1.y);
     return isHorizontal || isVertical;
 }
 
-// ÔÚµ±Ç°ÂÖÀªÖĞÕÒµ½×î½Ó½üĞÂµãµÄÁ½¸öÏàÁÚµã£¬²¢½«ĞÂµã²åÈëËüÃÇÖ®¼ä
+// åœ¨å½“å‰è½®å»“ä¸­æ‰¾åˆ°æœ€æ¥è¿‘æ–°ç‚¹çš„ä¸¤ä¸ªç›¸é‚»ç‚¹ï¼Œå¹¶å°†æ–°ç‚¹æ’å…¥å®ƒä»¬ä¹‹é—´
 void insertPoint(std::vector<cv::Point2f>& contour, const cv::Point& newPoint) {
     if (contour.empty()) {
-        contour.push_back(newPoint);  // Èç¹ûÂÖÀªÎª¿Õ£¬Ö±½Ó²åÈë
+        contour.push_back(newPoint);  // å¦‚æœè½®å»“ä¸ºç©ºï¼Œç›´æ¥æ’å…¥
         return;
     }
 
     double minDist = std::numeric_limits<double>::max();
     int insertIndex = -1;
 
-    // ±éÀúËùÓĞÏàÁÚµÄµã¶Ô£¬ÕÒµ½Âú×ã"ÖĞ¼äÌõ¼ş"ÇÒ¾àÀë×îĞ¡µÄµã¶Ô
-    for (size_t i = 0; i < contour.size() - 1; ++i) {
+    // éå†æ‰€æœ‰ç›¸é‚»çš„ç‚¹å¯¹ï¼Œæ‰¾åˆ°æ»¡è¶³"ä¸­é—´æ¡ä»¶"ä¸”è·ç¦»æœ€å°çš„ç‚¹å¯¹
+    for (size_t i = 0; i < contour.size(); ++i) {
         const cv::Point2f& p1 = contour[i];
-        const cv::Point2f& p2 = contour[i + 1];
+        const cv::Point2f& p2 = contour[(i + 1) % contour.size()];
 
-        // ¼ì²éĞÂµãÊÇ·ñÔÚÕâÁ½¸öµãÖ®¼ä
+        // æ£€æŸ¥æ–°ç‚¹æ˜¯å¦åœ¨è¿™ä¸¤ä¸ªç‚¹ä¹‹é—´
         if (isPointBetween(p1, p2, newPoint)) {
             double dist1 = distance(p1, newPoint);
             double dist2 = distance(p2, newPoint);
             double totalDist = dist1 + dist2;
 
-            // ¸üĞÂ×îĞ¡¾àÀëºÍ²åÈëÎ»ÖÃ
+            // æ›´æ–°æœ€å°è·ç¦»å’Œæ’å…¥ä½ç½®
             if (totalDist < minDist) {
                 minDist = totalDist;
                 insertIndex = static_cast<int>(i);
@@ -133,12 +133,12 @@ void insertPoint(std::vector<cv::Point2f>& contour, const cv::Point& newPoint) {
         }
     }
 
-    // Èç¹ûÕÒµ½Âú×ãÌõ¼şµÄÏàÁÚµã¶Ô£¬²åÈëĞÂµã
+    // å¦‚æœæ‰¾åˆ°æ»¡è¶³æ¡ä»¶çš„ç›¸é‚»ç‚¹å¯¹ï¼Œæ’å…¥æ–°ç‚¹
     if (insertIndex != -1) {
         contour.insert(contour.begin() + insertIndex + 1, newPoint);
     }
     else {
-        // Èç¹ûÃ»ÓĞÕÒµ½Âú×ãÌõ¼şµÄµã¶Ô£¬½«µãÌí¼Óµ½Ä©Î²
+        // å¦‚æœæ²¡æœ‰æ‰¾åˆ°æ»¡è¶³æ¡ä»¶çš„ç‚¹å¯¹ï¼Œå°†ç‚¹æ·»åŠ åˆ°æœ«å°¾
         contour.push_back(newPoint);
     }
 }
@@ -151,9 +151,9 @@ std::vector<cv::Point2f> smoothContourWithSlidingWindow(const std::vector<cv::Po
         int count = 0;
         cv::Point2f sum(0, 0);
 
-        // »¬¶¯´°¿ÚÄÚµÄÆ½¾ù
+        // æ»‘åŠ¨çª—å£å†…çš„å¹³å‡
         for (int j = -windowSize / 2; j <= windowSize / 2; ++j) {
-            int idx = (i + j + n) % n; // »·ĞÎÂÖÀª£¬È¡Ä£´¦Àí
+            int idx = (i + j + n) % n; // ç¯å½¢è½®å»“ï¼Œå–æ¨¡å¤„ç†
             sum += contour[idx];
             ++count;
         }
@@ -161,52 +161,72 @@ std::vector<cv::Point2f> smoothContourWithSlidingWindow(const std::vector<cv::Po
         smoothedContour.push_back(sum / count);
     }
 
-    // ±ÕºÏÂÖÀª£º½«×îºóÒ»¸öµãÁ¬½Óµ½µÚÒ»¸öµã
+    // é—­åˆè½®å»“ï¼šå°†æœ€åä¸€ä¸ªç‚¹è¿æ¥åˆ°ç¬¬ä¸€ä¸ªç‚¹
     smoothedContour.push_back(smoothedContour[0]);
     return smoothedContour;
 }
 
-// ¸ßË¹Æ½»¬
+// é«˜æ–¯å¹³æ»‘
 std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point>& contour, int kernelSize, double sigma) {
     cv::Mat pointsMat(contour.size(), 1, CV_32SC2, const_cast<cv::Point*>(contour.data()));
-    pointsMat.convertTo(pointsMat, CV_32FC2); // ×ª»»Îª¸¡µãÀàĞÍ
+    pointsMat.convertTo(pointsMat, CV_32FC2); // è½¬æ¢ä¸ºæµ®ç‚¹ç±»å‹
 
-    // ¸ßË¹Æ½»¬
+    // é«˜æ–¯å¹³æ»‘
     cv::GaussianBlur(pointsMat, pointsMat, cv::Size(kernelSize, kernelSize), sigma);
 
     std::vector<cv::Point2f> smoothedContour;
-    smoothedContour.reserve(pointsMat.rows);  // Ô¤·ÖÅä¿Õ¼ä,¼õÉÙ push_back Ê±µÄÄÚ´æÖØĞÂ·ÖÅä
+    smoothedContour.reserve(pointsMat.rows);  // é¢„åˆ†é…ç©ºé—´,å‡å°‘ push_back æ—¶çš„å†…å­˜é‡æ–°åˆ†é…
 
-    // Ö±½Ó·ÃÎÊ¾ØÕóÊı¾İ£¬±ÜÃâÊ¹ÓÃ at() ·½·¨
-    const cv::Vec2f* data = pointsMat.ptr<cv::Vec2f>(0);  // »ñÈ¡Ö¸ÏòÊı¾İµÄÖ¸Õë
+    // ç›´æ¥è®¿é—®çŸ©é˜µæ•°æ®ï¼Œé¿å…ä½¿ç”¨ at() æ–¹æ³•
+    const cv::Vec2f* data = pointsMat.ptr<cv::Vec2f>(0);  // è·å–æŒ‡å‘æ•°æ®çš„æŒ‡é’ˆ
 
     for (int i = 0; i < pointsMat.rows; ++i) {
-        smoothedContour.push_back(cv::Point2f(data[i][0], data[i][1]));  // Ê¹ÓÃÖ±½ÓµÄÄÚ´æ·ÃÎÊ
+        smoothedContour.push_back(cv::Point2f(data[i][0], data[i][1]));  // ä½¿ç”¨ç›´æ¥çš„å†…å­˜è®¿é—®
     }
 
-    // ±ÕºÏÂÖÀª£º½«×îºóÒ»¸öµãÁ¬½Óµ½µÚÒ»¸öµã
+    // é—­åˆè½®å»“ï¼šå°†æœ€åä¸€ä¸ªç‚¹è¿æ¥åˆ°ç¬¬ä¸€ä¸ªç‚¹
     smoothedContour.push_back(smoothedContour[0]);
     return smoothedContour;
 }
 
 std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point2f>& contour, int kernelSize, double sigma) {
-    cv::Mat pointsMat(contour);
+    int n = contour.size();  // è½®å»“çš„ç‚¹æ•°
+    std::vector<cv::Point2f> smoothedContour(n);
 
-    // ¸ßË¹Æ½»¬
-    cv::GaussianBlur(pointsMat, pointsMat, cv::Size(kernelSize, kernelSize), sigma);
+    // æ ¹æ®ç‚¹æ•°åŠ¨æ€è°ƒæ•´é«˜æ–¯æ ¸çš„å¤§å°
+    int adjustedKernelSize = std::min(kernelSize, n / 2);
+    int halfKernelSize = adjustedKernelSize / 2;
 
-    std::vector<cv::Point2f> smoothedContour;
-    smoothedContour.reserve(pointsMat.rows);  // Ô¤·ÖÅä¿Õ¼ä,¼õÉÙ push_back Ê±µÄÄÚ´æÖØĞÂ·ÖÅä
+    // è®¡ç®—é«˜æ–¯æ ¸ï¼ˆç¯çŠ¶å·ç§¯çš„æƒé‡ï¼‰
+    std::vector<float> kernel(adjustedKernelSize);
+    float sum = 0.0f;
 
-    // Ö±½Ó·ÃÎÊ¾ØÕóÊı¾İ£¬±ÜÃâÊ¹ÓÃ at() ·½·¨
-    const cv::Vec2f* data = pointsMat.ptr<cv::Vec2f>(0);  // »ñÈ¡Ö¸ÏòÊı¾İµÄÖ¸Õë
-
-    for (int i = 0; i < pointsMat.rows; ++i) {
-        smoothedContour.push_back(cv::Point2f(data[i][0], data[i][1]));  // Ê¹ÓÃÖ±½ÓµÄÄÚ´æ·ÃÎÊ
+    // è®¡ç®—ä¸€ç»´é«˜æ–¯æ ¸
+    for (int i = -halfKernelSize; i <= halfKernelSize; ++i) {
+        kernel[i + halfKernelSize] = exp(-0.5 * (i * i) / (sigma * sigma));
+        sum += kernel[i + halfKernelSize];
     }
 
-    // ±ÕºÏÂÖÀª£º½«×îºóÒ»¸öµãÁ¬½Óµ½µÚÒ»¸öµã
-    smoothedContour.push_back(smoothedContour[0]);
+    // å½’ä¸€åŒ–é«˜æ–¯æ ¸
+    for (int i = 0; i < adjustedKernelSize; ++i) {
+        kernel[i] /= sum;
+    }
+
+    // è¿›è¡Œç¯çŠ¶å·ç§¯
+    for (int i = 0; i < n; ++i) {
+        float smoothedX = 0.0f;
+        float smoothedY = 0.0f;
+
+        // å¯¹æ¯ä¸ªç‚¹è¿›è¡Œé«˜æ–¯æ¨¡ç³Š
+        for (int k = -halfKernelSize; k <= halfKernelSize; ++k) {
+            int idx = (i + k + n) % n;  // ç¯çŠ¶ç´¢å¼•ï¼Œç¡®ä¿é¦–å°¾ç›¸è¿
+            smoothedX += contour[idx].x * kernel[k + halfKernelSize];
+            smoothedY += contour[idx].y * kernel[k + halfKernelSize];
+        }
+
+        smoothedContour[i] = cv::Point2f(smoothedX, smoothedY);
+    }
+
     return smoothedContour;
 }
 
@@ -214,13 +234,13 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
     std::vector<cv::Point2f> smoothedContour;
     std::vector<std::future<std::vector<cv::Point2f>>> futures;
 
-    // ·Ö¶Î¼ÆËã
+    // åˆ†æ®µè®¡ç®—
     int segmentSize = contour.size() / numThreads;
     for (int t = 0; t < numThreads; ++t) {
         int start = t * segmentSize;
         int end = (t == numThreads - 1) ? contour.size() : (t + 1) * segmentSize;
 
-        // Ìí¼Ó²¶»ñµÄ±äÁ¿
+        // æ·»åŠ æ•è·çš„å˜é‡
         futures.push_back(std::async(std::launch::async, [start, end, &contour, numPoints, numThreads]() {
             std::vector<cv::Point2f> segment;
             auto bezierPoint = [](const std::vector<cv::Point2f>& points, double t) -> cv::Point2f {
@@ -242,18 +262,18 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
             }));
     }
 
-    // ºÏ²¢½á¹û
+    // åˆå¹¶ç»“æœ
     for (auto& f : futures) {
         auto segment = f.get();
         smoothedContour.insert(smoothedContour.end(), segment.begin(), segment.end());
     }
 
-    // ±ÕºÏÂÖÀª£º½«×îºóÒ»¸öµãÁ¬½Óµ½µÚÒ»¸öµã
+    // é—­åˆè½®å»“ï¼šå°†æœ€åä¸€ä¸ªç‚¹è¿æ¥åˆ°ç¬¬ä¸€ä¸ªç‚¹
     smoothedContour.push_back(smoothedContour[0]);
     return smoothedContour;
 }
 
-//Ë«±ßÂË²¨
+//åŒè¾¹æ»¤æ³¢
 std::vector<cv::Point2f> smoothContourWithBilateral(const std::vector<cv::Point2f>& contour, int windowSize, double spatialSigma, double intensitySigma) {
     std::vector<cv::Point2f> smoothedContour(contour.size());
     int n = contour.size();
@@ -263,9 +283,9 @@ std::vector<cv::Point2f> smoothContourWithBilateral(const std::vector<cv::Point2
         double totalWeight = 0.0;
 
         for (int j = -windowSize; j <= windowSize; ++j) {
-            int idx = (i + j + n) % n; // Ñ­»·´¦ÀíÂÖÀª
+            int idx = (i + j + n) % n; // å¾ªç¯å¤„ç†è½®å»“
 
-            // ¼ÆËã¿Õ¼äÈ¨ÖØºÍÇ¿¶ÈÈ¨ÖØ
+            // è®¡ç®—ç©ºé—´æƒé‡å’Œå¼ºåº¦æƒé‡
             double spatialWeight = exp(-0.5 * (j * j) / (spatialSigma * spatialSigma));
             double intensityWeight = exp(-0.5 * (cv::norm(contour[i] - contour[idx]) * cv::norm(contour[i] - contour[idx])) / (intensitySigma * intensitySigma));
 
@@ -277,7 +297,7 @@ std::vector<cv::Point2f> smoothContourWithBilateral(const std::vector<cv::Point2
         smoothedContour[i] = smoothedPoint / totalWeight;
     }
 
-    // ±ÕºÏÂÖÀª£º½«×îºóÒ»¸öµãÁ¬½Óµ½µÚÒ»¸öµã
+    // é—­åˆè½®å»“ï¼šå°†æœ€åä¸€ä¸ªç‚¹è¿æ¥åˆ°ç¬¬ä¸€ä¸ªç‚¹
     smoothedContour.push_back(smoothedContour[0]);
     return smoothedContour;
 }

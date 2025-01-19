@@ -5,12 +5,12 @@
 #include "cvui.h"
 #include "detector.h"
 
-#define KEY_ESCAPE	27			// ESC ¼ü
-#define KEY_SPACE	32			// ¿Õ¸ñ¼ü
-#define KEY_RETURN	13			// »Ø³µ¼ü
-#define CV_EDIT_VIEW	"¾µÆ¬"
+#define KEY_ESCAPE	27			// ESC é”®
+#define KEY_SPACE	32			// ç©ºæ ¼é”®
+#define KEY_RETURN	13			// å›žè½¦é”®
+#define CV_EDIT_VIEW	"é•œç‰‡"
 
-//´òÓ¡ÈÕÖ¾µ½Output´°¿Ú
+//æ‰“å°æ—¥å¿—åˆ°Outputçª—å£
 void trace(char* fmt, ...) {
 	char out[1024];
 	va_list body;
@@ -25,7 +25,7 @@ void mouseCallback(int event, int x, int y, int flags, void* userdata) {
 
 	cv::Rect editArea = detector->getEditArea();
 	if (!editArea.contains(cv::Point(x, y))) {
-		// ½«Êó±êÊÂ¼þ´«µÝ¸ø cvui µÄÊÂ¼þ¹ÜÀíÏµÍ³
+		// å°†é¼ æ ‡äº‹ä»¶ä¼ é€’ç»™ cvui çš„äº‹ä»¶ç®¡ç†ç³»ç»Ÿ
 		cvui::handleMouse(event, x, y, flags, &cvui::internal::getContext(CV_EDIT_VIEW));
 		return;
 	}
@@ -152,7 +152,7 @@ int main(int argc, char* argv[]) {
 		if (refreshUI(frame, background, writer) == KEY_ESCAPE)
 			break;
 
-		background.setTo(cv::Scalar(0));//Çå¿Õ±³¾°
+		background.setTo(cv::Scalar(0));//æ¸…ç©ºèƒŒæ™¯
 		capture >> frame;
 	}
 	writer.release();

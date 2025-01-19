@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////
 //				date: 2022.06.30
-//				author: ÁõÁ¢Ïò  
+//				author: åˆ˜ç«‹å‘  
 //				email: 13651417694@126.com
 //				qq: 515311445
 ///////////////////////////////////////////////////
@@ -10,11 +10,11 @@
 #include "Contour.h"
 #include "detector.h"
 
-#define KEY_LEFT	0x250000	// Ïò×ó
-#define KEY_TOP		0x260000	// ÏòÉÏ
-#define KEY_RIGHT	0x270000	// ÏòÓÒ
-#define KEY_BOTTOM	0x280000	// ÏòÏÂ
-#define KEY_DEL		0x2E0000	// É¾³ı
+#define KEY_LEFT	0x250000	// å‘å·¦
+#define KEY_TOP		0x260000	// å‘ä¸Š
+#define KEY_RIGHT	0x270000	// å‘å³
+#define KEY_BOTTOM	0x280000	// å‘ä¸‹
+#define KEY_DEL		0x2E0000	// åˆ é™¤
 
 Detector::Detector(cv::Rect rect)
 {
@@ -40,8 +40,8 @@ std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int median
     GaussianBlur(gray, gray, cv::Size(3, 3), 0);
 
     cv::Mat input = cv::Mat(3, 3, CV_8UC1);
-    erode(gray, gray, input);//¸¯Ê´
-    dilate(gray, gray, input);//ÅòÕÍ
+    erode(gray, gray, input);//è…èš€
+    dilate(gray, gray, input);//è†¨èƒ€
 
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(5, 5));
     clahe->apply(gray, gray);
@@ -49,12 +49,12 @@ std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int median
     Canny(gray, gray, 1, 180, 3);
 
     cv::Mat morphKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(morphKSize, morphKSize));
-    cv::morphologyEx(gray, gray, cv::MORPH_CLOSE, morphKernel);// ĞÎÌ¬Ñ§±ÕÔËËã
+    cv::morphologyEx(gray, gray, cv::MORPH_CLOSE, morphKernel);// å½¢æ€å­¦é—­è¿ç®—
 
     std::vector<std::vector<cv::Point> > contours;
     cv::findContours(gray, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 
-    //°Ñ»Ò¶ÈÍ¼ËõĞ¡ºóÌùµ½±³¾°ÓÒÉÏ½ÇÕ¹Ê¾
+    //æŠŠç°åº¦å›¾ç¼©å°åè´´åˆ°èƒŒæ™¯å³ä¸Šè§’å±•ç¤º
     cv::resize(gray, gray, cv::Size(cvRound(gray.cols / 2.0), cvRound(gray.rows / 2.0)), 0, 0, cv::INTER_LINEAR);
     cv::cvtColor(gray, background(cv::Rect(background.cols - gray.cols, 0, gray.cols, gray.rows)), cv::COLOR_GRAY2BGR);
 
@@ -73,8 +73,8 @@ std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, int medianBl
     GaussianBlur(gray, gray, cv::Size(3, 3), 0);
 
     cv::Mat input = cv::Mat(3, 3, CV_8UC1);
-    erode(gray, gray, input);//¸¯Ê´
-    dilate(gray, gray, input);//ÅòÕÍ
+    erode(gray, gray, input);//è…èš€
+    dilate(gray, gray, input);//è†¨èƒ€
 
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
     clahe->apply(gray, gray);
@@ -82,22 +82,22 @@ std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, int medianBl
     Canny(gray, gray, 1, 150, 3, true);
 
     cv::Mat morphKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(morphKSize, morphKSize));
-    cv::morphologyEx(gray, gray, cv::MORPH_CLOSE, morphKernel);// ĞÎÌ¬Ñ§±ÕÔËËã
+    cv::morphologyEx(gray, gray, cv::MORPH_CLOSE, morphKernel);// å½¢æ€å­¦é—­è¿ç®—
 
-    // ´´½¨Ò»¸öÓëÔ­Í¼Ïñ´óĞ¡ÏàÍ¬µÄÑÚÂëÍ¼Ïñ
+    // åˆ›å»ºä¸€ä¸ªä¸åŸå›¾åƒå¤§å°ç›¸åŒçš„æ©ç å›¾åƒ
     cv::Mat mask = cv::Mat::zeros(gray.size(), CV_8UC1);
 
-    // ÔÚÑÚÂëÍ¼ÏñÉÏ»æÖÆ²¢Ìî³ä¸ø¶¨µÄÂÖÀª
+    // åœ¨æ©ç å›¾åƒä¸Šç»˜åˆ¶å¹¶å¡«å……ç»™å®šçš„è½®å»“
     cv::drawContours(mask, std::vector<std::vector<cv::Point>>{contour}, -1, cv::Scalar(255), cv::FILLED);
 
-    // Ó¦ÓÃÑÚÂëµ½Ô­Í¼Ïñ£¬Ö»±£ÁôÂÖÀª·¶Î§ÄÚµÄÇøÓò
+    // åº”ç”¨æ©ç åˆ°åŸå›¾åƒï¼Œåªä¿ç•™è½®å»“èŒƒå›´å†…çš„åŒºåŸŸ
     gray.setTo(cv::Scalar(0), ~mask);
 
-    // ²éÕÒÂÖÀª
+    // æŸ¥æ‰¾è½®å»“
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(gray, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
-    //°Ñ»Ò¶ÈÍ¼ËõĞ¡ºóÌùµ½±³¾°ÓÒÉÏ½ÇÕ¹Ê¾
+    //æŠŠç°åº¦å›¾ç¼©å°åè´´åˆ°èƒŒæ™¯å³ä¸Šè§’å±•ç¤º
     cv::resize(gray, gray, cv::Size(cvRound(gray.cols / 2.0), cvRound(gray.rows / 2.0)), 0, 0, cv::INTER_LINEAR);
     cv::cvtColor(gray, background(cv::Rect(background.cols - gray.cols, 0, gray.cols, gray.rows)), cv::COLOR_GRAY2BGR);
 
