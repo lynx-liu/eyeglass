@@ -5,6 +5,7 @@
 #include "cvui.h"
 #include "detector.h"
 
+#define KEY_UNPRESS -1			// 无按键
 #define KEY_ESCAPE	27			// ESC 键
 #define KEY_SPACE	32			// 空格键
 #define KEY_RETURN	13			// 回车键
@@ -33,7 +34,7 @@ void mouseCallback(int event, int x, int y, int flags, void* userdata) {
 	detector->onMouse(event, x, y);
 }
 
-int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer)
+int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool isEdit)
 {
 	bool refresh = false;
 	int medianBlurKSize = -1, morphKSize = -1;
@@ -71,10 +72,12 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer)
 		if (cvui::button(background, settingX + settingWidth - margin * 4, settingY + settingHeight - (margin + padding), "FindNext")) {
 			detector.findNext();
 			refresh = true;
+			isEdit = true;
 		}
 
 		if (cvui::button(background, settingX + settingWidth - margin * 2, settingY + settingHeight - (margin + padding), "Save")) {
 			detector.saveToDxf("eyeglass.dxf");
+			isEdit = true;
 		}
 		cvui::update();
 
@@ -87,10 +90,17 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer)
 		int key = cv::waitKeyEx(20);
 		trace("key: %d\r\n", key);
 		switch (key) {
+		case KEY_UNPRESS:
+			if (!isEdit) return key;
+			break;
+
 		case KEY_ESCAPE:
 		case KEY_RETURN:
-		case KEY_SPACE:
 			return key;
+
+		case KEY_SPACE:
+			isEdit = !isEdit;
+			break;
 
 		default:
 			detector.onKey(key);
@@ -138,18 +148,21 @@ int main(int argc, char* argv[]) {
 	}
 
 	int n = 1;
+	bool isEdit = false;
 	cv::Mat background(screenSize, CV_8UC3, cv::Scalar(0));
 	while (!frame.empty() || ++n < argc) {
 		if (frame.empty() && capture.open(argv[n])) {
 			capture >> frame;
 			if (frame.empty())
 				break;
+
+			isEdit = true;
 		}
 
 		double scale = frame.rows / std::min(960.0, screenSize.height*1.0);
 		cv::resize(frame, frame, cv::Size(cvRound(frame.cols / scale), cvRound(frame.rows / scale)), 0, 0, cv::INTER_LINEAR);
 
-		if (refreshUI(frame, background, writer) == KEY_ESCAPE)
+		if (refreshUI(frame, background, writer, isEdit) == KEY_ESCAPE)
 			break;
 
 		background.setTo(cv::Scalar(0));//清空背景

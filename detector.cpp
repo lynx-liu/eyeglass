@@ -33,7 +33,7 @@ Detector::~Detector()
 std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background) {
     cv::Mat gray;
     cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-
+    /*
     medianBlur(gray, gray, medianBlurKSize);
     blur(gray, gray, cv::Size(3, 3));
     stackBlur(gray, gray, cv::Size(5, 5));
@@ -45,7 +45,7 @@ std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int median
 
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(5, 5));
     clahe->apply(gray, gray);
-
+    */
     Canny(gray, gray, 1, 180, 3);
 
     cv::Mat morphKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(morphKSize, morphKSize));
@@ -68,7 +68,7 @@ std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int median
 std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, int medianBlurKSize, int morphKSize, const std::vector<cv::Point>& contour, cv::Mat background) {
     cv::Mat gray;
     cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-
+    /*
     medianBlur(gray, gray, medianBlurKSize);
     GaussianBlur(gray, gray, cv::Size(3, 3), 0);
 
@@ -78,7 +78,7 @@ std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, int medianBl
 
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
     clahe->apply(gray, gray);
-
+    */
     Canny(gray, gray, 1, 150, 3, true);
 
     cv::Mat morphKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(morphKSize, morphKSize));
@@ -95,7 +95,7 @@ std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, int medianBl
 
     // 查找轮廓
     std::vector<std::vector<cv::Point>> contours;
-    cv::findContours(gray, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
+    cv::findContours(gray, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 
     //把灰度图缩小后贴到背景右上角展示
     cv::resize(gray, gray, cv::Size(cvRound(gray.cols / 2.0), cvRound(gray.rows / 2.0)), 0, 0, cv::INTER_LINEAR);
