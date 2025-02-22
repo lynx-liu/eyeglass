@@ -64,7 +64,7 @@ void Dxf::WriteContourToDxf(std::ofstream& dxfFile, const std::vector<cv::Point2
         dxfFile << " 10\n";
         dxfFile << pt.x << "\n";
         dxfFile << " 20\n";
-        dxfFile << pt.y << "\n";
+        dxfFile << -pt.y << "\n";
         dxfFile << " 30\n";
         dxfFile << "0.0\n";
     }
