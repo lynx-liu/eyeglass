@@ -107,6 +107,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool is
 			break;
 		}
 	}
+	return KEY_ESCAPE;
 }
 
 int main(int argc, char* argv[]) {
