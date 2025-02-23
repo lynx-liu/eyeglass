@@ -4,6 +4,7 @@
 #define CVUI_IMPLEMENTATION
 #include "cvui.h"
 #include "detector.h"
+#include <codecvt>
 
 #define KEY_UNPRESS -1			// 无按键
 #define KEY_ESCAPE	27			// ESC 键
@@ -19,6 +20,22 @@ void trace(char* fmt, ...) {
 	vsprintf(out, fmt, body);
 	va_end(body);
 	OutputDebugStringA(out);
+}
+
+bool isRegisted(const char *code) {
+	DWORD dwCode = 0;
+	DWORD dwSerial = 0;
+	DWORD dwIDESerial = 0;
+	GetVolumeInformation("\\", NULL, NULL, &dwIDESerial, NULL, NULL, NULL, NULL);
+
+	sscanf(code, "%x", &dwCode);
+	while (dwCode)
+	{
+		dwSerial = dwSerial * 10 + dwCode % 10;
+		dwCode /= 10;
+	}
+
+	return dwSerial == dwIDESerial;
 }
 
 void mouseCallback(int event, int x, int y, int flags, void* userdata) {
@@ -48,6 +65,10 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool is
 		cv::setMouseCallback(CV_EDIT_VIEW, mouseCallback, &detector);
 	}
 
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+	std::string code = converter.to_bytes(L"QQ:515311445");
+	bool registed = isRegisted(code.c_str());
+
 	while (cv::getWindowProperty(CV_EDIT_VIEW, cv::WND_PROP_VISIBLE)) {
 		if ( (medianBlurKSize != medianBlurTrack || morphKSize != morphKTrack) && !cvui::mouse(cvui::LEFT_BUTTON, cvui::IS_DOWN) && !cvui::mouse(cvui::RIGHT_BUTTON, cvui::IS_DOWN)
 			|| refresh) {
@@ -69,6 +90,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool is
 		cvui::text(background, settingX + padding, settingY + (margin + padding) * 2, "Morph Kernel");
 		cvui::trackbar(background, settingX + padding * 2, settingY + (margin + padding) * 2 + padding, settingWidth - padding * 3, &morphKTrack, 1, 50, 1, "%.0Lf");
 
+		if(!registed && code.find("QQ")==0) cvui::text(background, settingX + padding * 2, settingY + settingHeight - (margin + padding), code);
 		if (cvui::button(background, settingX + settingWidth - margin * 4, settingY + settingHeight - (margin + padding), "FindNext")) {
 			detector.findNext();
 			refresh = true;
@@ -76,7 +98,23 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool is
 		}
 
 		if (cvui::button(background, settingX + settingWidth - margin * 2, settingY + settingHeight - (margin + padding), "Save")) {
-			detector.saveToDxf("eyeglass.dxf");
+			if (registed) {
+				detector.saveToDxf("eyeglass.dxf");
+			}
+			else {
+				STARTUPINFO si;
+				ZeroMemory(&si, sizeof(si));
+				si.cb = sizeof(si);
+
+				PROCESS_INFORMATION pi;
+				ZeroMemory(&pi, sizeof(pi));
+
+				CreateProcess("Crack.exe", NULL, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi);
+
+				CloseHandle(pi.hProcess);
+				CloseHandle(pi.hThread);
+				return KEY_ESCAPE;
+			}
 			isEdit = true;
 		}
 		cvui::update();
