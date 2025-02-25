@@ -26,7 +26,10 @@ bool isRegisted(const char *code) {
 	DWORD dwCode = 0;
 	DWORD dwSerial = 0;
 	DWORD dwIDESerial = 0;
-	GetVolumeInformation("\\", NULL, NULL, &dwIDESerial, NULL, NULL, NULL, NULL);
+	//GetVolumeInformation("\\", NULL, NULL, &dwIDESerial, NULL, NULL, NULL, NULL);
+	int cpuInfo[4] = { 0 };
+	__cpuid(cpuInfo, 1); // EAX=1 查询 Processor ID
+	dwIDESerial = (cpuInfo[0] & 0xFFFFFFFFl + cpuInfo[3] & 0xFFFFFFFFl) & 0xFFFFFFFFl;//cpuInfo[1]可能每次不一样
 
 	sscanf(code, "%x", &dwCode);
 	while (dwCode)
