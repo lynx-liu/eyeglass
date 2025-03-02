@@ -33,7 +33,10 @@ Detector::~Detector()
 std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background) {
     cv::Mat gray;
     cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-    /*
+    
+    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(5, 5));
+    clahe->apply(gray, gray);
+
     medianBlur(gray, gray, medianBlurKSize);
     blur(gray, gray, cv::Size(3, 3));
     stackBlur(gray, gray, cv::Size(5, 5));
@@ -43,9 +46,6 @@ std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int median
     erode(gray, gray, input);//腐蚀
     dilate(gray, gray, input);//膨胀
 
-    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(5, 5));
-    clahe->apply(gray, gray);
-    */
     Canny(gray, gray, 1, 180, 3);
 
     cv::Mat morphKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(morphKSize, morphKSize));
