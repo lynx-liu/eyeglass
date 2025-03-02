@@ -90,10 +90,15 @@ void moveContour(std::vector<cv::Point2f>& contour, cv::Rect& area, int dx, int 
 
 void deleteContour(std::vector<cv::Point2f>& contour, cv::Rect& area) {
     contour.erase(std::remove_if(contour.begin(), contour.end(),
-        [&area](const cv::Point& pt) {
+        [&area](const cv::Point2f& pt) {
             return area.contains(pt);
         }),
         contour.end());
+
+    // 确保封闭性：如果首尾点被删了，重新添加
+    if (!contour.empty() && contour.back() != contour.front()) {
+        contour.push_back(contour.front());
+    }
 }
 
 // 检查新点是否在两个点之间（在水平或垂直方向上满足中间位置）
