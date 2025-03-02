@@ -51,8 +51,10 @@ std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int median
     cv::Mat morphKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(morphKSize, morphKSize));
     cv::morphologyEx(gray, gray, cv::MORPH_CLOSE, morphKernel);// 形态学闭运算
 
+    int offset = 10;
+    cv::Rect roi = cv::Rect(offset, offset, gray.cols - offset * 2, gray.rows - offset * 2);
     std::vector<std::vector<cv::Point> > contours;
-    cv::findContours(gray, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+    cv::findContours(gray(roi), contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE,cv::Point(offset,offset));
 
     //把灰度图缩小后贴到背景右上角展示
     cv::resize(gray, gray, cv::Size(cvRound(gray.cols / 2.0), cvRound(gray.rows / 2.0)), 0, 0, cv::INTER_LINEAR);
