@@ -195,6 +195,7 @@ std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point2f>& contour,
 
     // 根据点数动态调整高斯核的大小
     int adjustedKernelSize = std::min(kernelSize, n / 2);
+    if (adjustedKernelSize % 2 == 0) adjustedKernelSize++;//确保为奇数，否则kernel访问会出界
     int halfKernelSize = adjustedKernelSize / 2;
 
     // 计算高斯核（环状卷积的权重）
