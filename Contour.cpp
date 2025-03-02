@@ -232,16 +232,19 @@ std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point2f>& contour,
 }
 
 std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>& contour, int numPoints, int numThreads) {
+    if (contour.empty() || numThreads <= 0 || numPoints <= 0) return {};
+
     std::vector<cv::Point2f> smoothedContour;
     std::vector<std::future<std::vector<cv::Point2f>>> futures;
 
     // 分段计算
-    int segmentSize = contour.size() / numThreads;
+    int segmentSize = std::max(1, (int)contour.size() / numThreads);
     for (int t = 0; t < numThreads; ++t) {
         int start = t * segmentSize;
-        int end = (t == numThreads - 1) ? contour.size() : (t + 1) * segmentSize;
+        int end = (t == numThreads - 1) ? contour.size() : std::min((t + 1) * segmentSize, (int)contour.size());
 
-        // 添加捕获的变量
+        if (start >= contour.size()) break; // 避免越界
+
         futures.push_back(std::async(std::launch::async, [start, end, &contour, numPoints, numThreads]() {
             std::vector<cv::Point2f> segment;
             auto bezierPoint = [](const std::vector<cv::Point2f>& points, double t) -> cv::Point2f {
@@ -255,8 +258,9 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
                 return temp[0];
             };
 
-            for (int i = 0; i < numPoints / numThreads; ++i) {
-                double t = static_cast<double>(i) / (numPoints / numThreads - 1);
+            int localNumPoints = std::max(1, numPoints / numThreads);
+            for (int i = 0; i < localNumPoints; ++i) {
+                double t = (localNumPoints > 1) ? static_cast<double>(i) / (localNumPoints - 1) : 0.0;
                 segment.push_back(bezierPoint(std::vector<cv::Point2f>(contour.begin() + start, contour.begin() + end), t));
             }
             return segment;
@@ -269,8 +273,11 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
         smoothedContour.insert(smoothedContour.end(), segment.begin(), segment.end());
     }
 
-    // 闭合轮廓：将最后一个点连接到第一个点
-    smoothedContour.push_back(smoothedContour[0]);
+    // 闭合轮廓：避免空 vector 访问
+    if (!smoothedContour.empty()) {
+        smoothedContour.push_back(smoothedContour[0]);
+    }
+
     return smoothedContour;
 }
 
