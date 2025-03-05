@@ -70,17 +70,19 @@ std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int median
 std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, int medianBlurKSize, int morphKSize, const std::vector<cv::Point>& contour, cv::Mat background) {
     cv::Mat gray;
     cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-    /*
+
+    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(5, 5));
+    clahe->apply(gray, gray);
+
     medianBlur(gray, gray, medianBlurKSize);
+    blur(gray, gray, cv::Size(3, 3));
+    stackBlur(gray, gray, cv::Size(5, 5));
     GaussianBlur(gray, gray, cv::Size(3, 3), 0);
 
     cv::Mat input = cv::Mat(3, 3, CV_8UC1);
     erode(gray, gray, input);//腐蚀
     dilate(gray, gray, input);//膨胀
 
-    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
-    clahe->apply(gray, gray);
-    */
     Canny(gray, gray, 1, 150, 3, true);
 
     cv::Mat morphKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(morphKSize, morphKSize));
@@ -120,7 +122,7 @@ void Detector::detect(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Ma
     else {
         drawContours(frame, eyeglassContours, cv::Scalar(0, 255, 0));
 
-        std::vector<cv::Point> contour = scaleContour(eyeglassContours.back(), 10);
+        std::vector<cv::Point> contour = scaleContour(eyeglassContours.back(), 7);
         if (!contour.empty()) {
             currentContour = findContourInMask(frame, medianBlurKSize, morphKSize, contour, background);
         }
