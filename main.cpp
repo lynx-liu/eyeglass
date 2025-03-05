@@ -58,9 +58,9 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool is
 {
 	bool refresh = false;
 	int medianBlurKSize = -1, morphKSize = -1;
-	int medianBlurTrack = 0, morphKTrack = 9;
+	int medianBlurTrack = 0, morphKTrack = 7;
 
-	int margin = 50, padding = 15, settingWidth = 480, settingHeight = 270;
+	int margin = 50, padding = 15, settingWidth = 240, settingHeight = 270;
 	int settingX = background.cols - settingWidth - margin, settingY = background.rows - settingHeight - margin;
 
 	Detector detector = Detector(cv::Rect(0, 0, frame.cols, frame.rows));
@@ -79,7 +79,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool is
 			morphKSize = morphKTrack;
 			refresh = false;
 
-			detector.detect(frame.clone(), (medianBlurKSize << 1) + 1, morphKSize, background);
+			detector.detect(frame.clone(), (medianBlurKSize << 1) + 1, morphKSize + 1, background);
 		}
 		else {
 			detector.drawFrame(frame.clone(), background);
@@ -91,9 +91,9 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool is
 		cvui::trackbar(background, settingX + padding * 2, settingY + margin + padding, settingWidth - padding * 3, &medianBlurTrack, 0, 9, 0, "%.0Lf");
 
 		cvui::text(background, settingX + padding, settingY + (margin + padding) * 2, "Morph Kernel");
-		cvui::trackbar(background, settingX + padding * 2, settingY + (margin + padding) * 2 + padding, settingWidth - padding * 3, &morphKTrack, 1, 50, 1, "%.0Lf");
+		cvui::trackbar(background, settingX + padding * 2, settingY + (margin + padding) * 2 + padding, settingWidth - padding * 3, &morphKTrack, 0, 9, 1, "%.0Lf");
 
-		if(!registed && code.find("QQ")==0) cvui::text(background, settingX + padding * 2, settingY + settingHeight - (margin + padding), code);
+		if(!registed && code.find("QQ")==0) cvui::text(background, frame.cols/2- padding, frame.rows/2, code, 1.0, 0xFF0000);
 		if (cvui::button(background, settingX + settingWidth - margin * 4, settingY + settingHeight - (margin + padding), "FindNext")) {
 			detector.findNext();
 			refresh = true;
