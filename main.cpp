@@ -54,7 +54,7 @@ void mouseCallback(int event, int x, int y, int flags, void* userdata) {
 	detector->onMouse(event, x, y);
 }
 
-int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool isEdit)
+int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& isEdit)
 {
 	bool refresh = false;
 	int medianBlurKSize = -1, morphKSize = -1;
@@ -136,9 +136,9 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool is
 			break;
 
 		case KEY_ESCAPE:
-		case KEY_RETURN:
 			return key;
 
+		case KEY_RETURN:
 		case KEY_SPACE:
 			isEdit = !isEdit;
 			break;
@@ -189,8 +189,11 @@ int main(int argc, char* argv[]) {
 		writer.open("demo.mp4", fourcc, fps, screenSize);
 	}
 
+	double frameCount = capture.get(cv::CAP_PROP_FRAME_COUNT);
+	trace("frameCount: %d", frameCount);
+
 	int n = 1;
-	bool isEdit = false;
+	bool isEdit = frameCount<=1;
 	cv::Mat background(screenSize, CV_8UC3, cv::Scalar(0));
 	while (!frame.empty() || ++n < argc) {
 		if (frame.empty() && capture.open(argv[n])) {
