@@ -71,7 +71,7 @@ std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, int medianBl
     cv::Mat gray;
     cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
-    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(5, 5));
+    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(15.0, cv::Size(5, 5));
     clahe->apply(gray, gray);
 
     medianBlur(gray, gray, medianBlurKSize);
