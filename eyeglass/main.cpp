@@ -6,17 +6,21 @@
 
 #define CV_EDIT_VIEW	"EyeGlass"
 
+cv::Rect settingsRect = {};
 void mouseCallback(int event, int x, int y, int flags, void* userdata) {
     Detector* detector = static_cast<Detector*>(userdata);
-
-    cv::Rect editArea = detector->getEditArea();
-    if (!editArea.contains(cv::Point(x, y))) {
+    cv::Point point = cv::Point(x, y);
+    if (settingsRect.contains(point)) {
         // 将鼠标事件传递给 cvui 的事件管理系统
         cvui::handleMouse(event, x, y, flags, &cvui::internal::getContext(CV_EDIT_VIEW));
         return;
     }
-
-    detector->onMouse(event, x, y);
+    else {
+        cv::Rect editArea = detector->getEditArea();
+        if (editArea.contains(point)) {
+            detector->onMouse(event, x, y);
+        }
+    }
 }
 
 int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& isEdit, void* userdata)
@@ -29,7 +33,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
 
     int margin = 50, padding = 15, settingWidth = 240, settingHeight = 270;
     int settingX = background.cols - settingWidth - margin, settingY = background.rows - settingHeight - margin;
-
+    settingsRect = { settingX, settingY, settingWidth, settingHeight };
     detector->reset({ 0, 0, frame.cols, frame.rows });
 
     while (cv::getWindowProperty(CV_EDIT_VIEW, cv::WND_PROP_VISIBLE)) {
