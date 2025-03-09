@@ -27,3 +27,18 @@
 #else
 #pragma comment(lib,"opencv_world" CV_VERSION_ID ".lib")
 #endif
+
+#include "../detector/detector.h"
+#ifdef _WIN64
+#ifdef _DEBUG
+#pragma comment(lib,"../x64/Debug/detector.lib")
+#else
+#pragma comment(lib,"../x64/Release/detector.lib")
+#endif
+#else
+#ifdef _DEBUG
+#pragma comment(lib,"../Debug/detector.lib")
+#else
+#pragma comment(lib,"../Release/detector.lib")
+#endif
+#endif
