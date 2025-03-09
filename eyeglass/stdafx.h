@@ -28,6 +28,7 @@
 #pragma comment(lib,"opencv_world" CV_VERSION_ID ".lib")
 #endif
 
+#include "../detector/debug.h"
 #include "../detector/detector.h"
 #ifdef _WIN64
 #ifdef _DEBUG

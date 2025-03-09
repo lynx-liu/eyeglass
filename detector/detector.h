@@ -12,9 +12,6 @@
 #include <thread>
 #include <opencv2/opencv.hpp>
 
-#include "debug.h"
-#include "fps.hpp"
-
 #define KEY_UNPRESS -1			// 无按键
 #define KEY_ESCAPE	27			// ESC 键
 #define KEY_SPACE	32			// 空格键
@@ -44,7 +41,6 @@ private:
     cv::Point mousePoint;
     std::vector<cv::Point2f> currentContour;
     std::vector<std::vector<cv::Point2f>> eyeglassContours;
-    FPS fps_ = FPS();
 };
 
 #endif // DETECTOR_H

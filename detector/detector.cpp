@@ -6,6 +6,8 @@
 ///////////////////////////////////////////////////
 
 #include "dxf.h"
+#include "debug.h"
+#include "fps.hpp"
 #include "Register.h"
 #include "Contour.h"
 #include "detector.h"
@@ -17,6 +19,7 @@
 #define KEY_DEL		0x2E0000	// 删除
 
 Register m_register;
+FPS fps_ = FPS();
 
 Detector::Detector()
 {
