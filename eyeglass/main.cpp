@@ -93,7 +93,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             writer.write(background);
         }
 
-        int key = cv::waitKeyEx(20);
+        int key = cv::waitKeyEx(1);
         if(key!=KEY_UNPRESS) debug("key: %d\r\n", key);
         switch (key) {
         case KEY_UNPRESS:
