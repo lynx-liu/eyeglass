@@ -11,19 +11,26 @@
 #include <vector>
 #include <thread>
 
+#include "debug.h"
 #include "fps.hpp"
+
+#define KEY_UNPRESS -1			// 无按键
+#define KEY_ESCAPE	27			// ESC 键
+#define KEY_SPACE	32			// 空格键
+#define KEY_RETURN	13			// 回车键
 
 class Detector {
 public:
-    Detector(cv::Rect rect);
+    Detector();
     ~Detector();
     void detect(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background);
     void drawFrame(cv::Mat frame, cv::Mat background);
     void findNext();
-    void saveToDxf(char *filename);
+    bool saveToDxf(char *filename);
     void onKey(int key);
     void onMouse(int event, int x, int y);
     cv::Rect getEditArea();
+    void reset(cv::Rect rect = {});
 
 protected:
     std::vector<cv::Point2f> findExternalContour(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background);

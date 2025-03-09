@@ -7,6 +7,7 @@
 
 #include "stdafx.h"
 #include "dxf.h"
+#include "Register.h"
 #include "Contour.h"
 #include "detector.h"
 
@@ -16,18 +17,27 @@
 #define KEY_BOTTOM	0x280000	// 向下
 #define KEY_DEL		0x2E0000	// 删除
 
-Detector::Detector(cv::Rect rect)
+Register m_register;
+
+Detector::Detector()
 {
-    editArea = rect;
-    isEditSelectArea = false;
-    currentContour.clear();
-    eyeglassContours.clear();
+    reset();
 }
 
 Detector::~Detector()
 {
-    eyeglassContours.clear();
+    reset();
+}
+
+void Detector::reset(cv::Rect rect)
+{
+    editArea = rect;
+
+    isEditSelectArea = false;
+    selectRect = cv::Rect(0, 0, 0, 0);
+
     currentContour.clear();
+    eyeglassContours.clear();
 }
 
 std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background) {
@@ -132,6 +142,7 @@ void Detector::detect(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Ma
     }
 
     if(!currentContour.empty()) drawContour(frame, currentContour, cv::Scalar(255, 0, 0), true);
+    if (m_register.showQQ()) putText(frame, m_register.getMark(), cv::Point(frame.cols / 3, frame.rows / 2), cv::FONT_HERSHEY_COMPLEX, 1.2, cv::Scalar(0,0,255), 2);
 
     fps_.toc();
 
@@ -150,6 +161,8 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background)
     if (!currentContour.empty()) drawContour(frame, currentContour, cv::Scalar(255, 0, 0), true);
     cv::rectangle(frame, selectRect, cv::Scalar(255, 0, 255), 2);
 
+    if (m_register.showQQ()) putText(frame, m_register.getMark(), cv::Point(frame.cols / 3, frame.rows / 2), cv::FONT_HERSHEY_COMPLEX, 1.2, cv::Scalar(0, 0, 255), 2);
+
     fps_.toc();
 
     char szText[_MAX_PATH] = { 0 };
@@ -166,10 +179,13 @@ void Detector::findNext() {
     }
 }
 
-void Detector::saveToDxf(char *filename) {
+bool Detector::saveToDxf(char *filename) {
+    if (!m_register.isRegisted()) return false;
+
     std::vector<std::vector<cv::Point2f>> contours = eyeglassContours;
     contours.emplace_back(currentContour);
     Dxf::SaveContoursToFile(contours, filename);
+    return true;
 }
 
 void Detector::onKey(int key) {
@@ -219,13 +235,15 @@ void Detector::onMouse(int event, int x, int y) {
         }
     }
     else if (event == cv::EVENT_LBUTTONUP) {
-        isEditSelectArea = false;
-        int rectX = std::min(selectRect.x, x);
-        int rectY = std::min(selectRect.y, y);
-        int rectWidth = std::abs(x - selectRect.x);
-        int rectHeight = std::abs(y - selectRect.y);
+        if (isEditSelectArea) {
+            isEditSelectArea = false;
+            int rectX = std::min(selectRect.x, x);
+            int rectY = std::min(selectRect.y, y);
+            int rectWidth = std::abs(x - selectRect.x);
+            int rectHeight = std::abs(y - selectRect.y);
 
-        selectRect = cv::Rect(rectX, rectY, rectWidth, rectHeight);
+            selectRect = cv::Rect(rectX, rectY, rectWidth, rectHeight);
+        }
     }
 }
 

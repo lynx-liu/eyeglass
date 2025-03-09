@@ -143,12 +143,17 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <ResourceCompile>
+      <Culture>0x7804</Culture>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Contour.cpp" />
+    <ClCompile Include="debug.cpp" />
     <ClCompile Include="detector.cpp" />
     <ClCompile Include="dxf.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Register.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -159,9 +164,11 @@
   <ItemGroup>
     <ClInclude Include="Contour.h" />
     <ClInclude Include="cvui.h" />
+    <ClInclude Include="debug.h" />
     <ClInclude Include="detector.h" />
     <ClInclude Include="dxf.h" />
     <ClInclude Include="fps.hpp" />
+    <ClInclude Include="Register.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
