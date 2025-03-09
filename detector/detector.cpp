@@ -1,11 +1,10 @@
-///////////////////////////////////////////////////
+﻿///////////////////////////////////////////////////
 //				date: 2022.06.30
 //				author: 刘立向  
 //				email: 13651417694@126.com
 //				qq: 515311445
 ///////////////////////////////////////////////////
 
-#include "stdafx.h"
 #include "dxf.h"
 #include "Register.h"
 #include "Contour.h"
@@ -147,7 +146,7 @@ void Detector::detect(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Ma
     fps_.toc();
 
     char szText[_MAX_PATH] = { 0 };
-    sprintf(szText, "%s", fps_.toString().c_str());
+    sprintf_s(szText, _MAX_PATH, "%s", fps_.toString().c_str());
     cv::putText(frame, szText, cv::Point(0, frame.rows - 3), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 128, 255));
     
     frame.copyTo(background(cv::Rect(0, 0, frame.cols, frame.rows)));
@@ -166,7 +165,7 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background)
     fps_.toc();
 
     char szText[_MAX_PATH] = { 0 };
-    sprintf(szText, "%s", fps_.toString().c_str());
+    sprintf_s(szText, _MAX_PATH, "%s", fps_.toString().c_str());
     cv::putText(frame, szText, cv::Point(0, frame.rows - 3), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 128, 255));
 
     frame.copyTo(background(cv::Rect(0, 0, frame.cols, frame.rows)));

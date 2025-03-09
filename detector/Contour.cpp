@@ -1,11 +1,10 @@
-///////////////////////////////////////////////////
+﻿///////////////////////////////////////////////////
 //				date: 2025.01.10
 //				author: 刘立向  
 //				email: 13651417694@126.com
 //				qq: 515311445
 ///////////////////////////////////////////////////
 
-#include "stdafx.h"
 #include "Contour.h"
 #include <future>
 
@@ -38,7 +37,7 @@ std::vector<cv::Point> scaleContour(const std::vector<cv::Point2f>& contour, int
     scaleContour.reserve(contour.size());
     for (const auto& point : contour) {
         cv::Point2f direction = point - center;
-        float length = distance(point, center);
+        double length = distance(point, center);
         if (length > 0) direction /= length;
 
         scaleContour.push_back(point - direction * N);
@@ -48,9 +47,9 @@ std::vector<cv::Point> scaleContour(const std::vector<cv::Point2f>& contour, int
 
 int findMaxContourId(const std::vector<std::vector<cv::Point> >& contours)
 {
-    int index = 0;
+    int index = 0, n = (int)contours.size();
     int maxArea = cv::minAreaRect(contours[index]).boundingRect().area();
-    for (size_t i = 1; i < contours.size(); i++) {
+    for (int i = 1; i < n; i++) {
         int area = cv::minAreaRect(contours[i]).boundingRect().area();
         if (area > maxArea) {
             index = i;
@@ -150,7 +149,7 @@ void insertPoint(std::vector<cv::Point2f>& contour, const cv::Point& newPoint) {
 
 std::vector<cv::Point2f> smoothContourWithSlidingWindow(const std::vector<cv::Point2f>& contour, int windowSize) {
     std::vector<cv::Point2f> smoothedContour;
-    int n = contour.size();
+    int n = (int)contour.size();
 
     for (int i = 0; i < n; ++i) {
         int count = 0;
@@ -173,7 +172,7 @@ std::vector<cv::Point2f> smoothContourWithSlidingWindow(const std::vector<cv::Po
 
 // 高斯平滑
 std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point>& contour, int kernelSize, double sigma) {
-    cv::Mat pointsMat(contour.size(), 1, CV_32SC2, const_cast<cv::Point*>(contour.data()));
+    cv::Mat pointsMat((int)contour.size(), 1, CV_32SC2, const_cast<cv::Point*>(contour.data()));
     pointsMat.convertTo(pointsMat, CV_32FC2); // 转换为浮点类型
 
     // 高斯平滑
@@ -195,7 +194,7 @@ std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point>& contour, i
 }
 
 std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point2f>& contour, int kernelSize, double sigma) {
-    int n = contour.size();  // 轮廓的点数
+    int n = (int)contour.size();  // 轮廓的点数
     std::vector<cv::Point2f> smoothedContour(n);
 
     // 根据点数动态调整高斯核的大小
@@ -204,8 +203,8 @@ std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point2f>& contour,
     int halfKernelSize = adjustedKernelSize / 2;
 
     // 计算高斯核（环状卷积的权重）
-    std::vector<float> kernel(adjustedKernelSize);
-    float sum = 0.0f;
+    std::vector<double> kernel(adjustedKernelSize);
+    double sum = 0.0f;
 
     // 计算一维高斯核
     for (int i = -halfKernelSize; i <= halfKernelSize; ++i) {
@@ -220,8 +219,8 @@ std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point2f>& contour,
 
     // 进行环状卷积
     for (int i = 0; i < n; ++i) {
-        float smoothedX = 0.0f;
-        float smoothedY = 0.0f;
+        double smoothedX = 0.0f;
+        double smoothedY = 0.0f;
 
         // 对每个点进行高斯模糊
         for (int k = -halfKernelSize; k <= halfKernelSize; ++k) {
@@ -230,7 +229,7 @@ std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point2f>& contour,
             smoothedY += contour[idx].y * kernel[k + halfKernelSize];
         }
 
-        smoothedContour[i] = cv::Point2f(smoothedX, smoothedY);
+        smoothedContour[i] = cv::Point2f((float)smoothedX, (float)smoothedY);
     }
 
     return smoothedContour;
@@ -246,7 +245,7 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
     int segmentSize = std::max(1, (int)contour.size() / numThreads);
     for (int t = 0; t < numThreads; ++t) {
         int start = t * segmentSize;
-        int end = (t == numThreads - 1) ? contour.size() : std::min((t + 1) * segmentSize, (int)contour.size());
+        int end = (t == numThreads - 1) ? (int)contour.size() : std::min((t + 1) * segmentSize, (int)contour.size());
 
         if (start >= contour.size()) break; // 避免越界
 
@@ -289,7 +288,7 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
 //双边滤波
 std::vector<cv::Point2f> smoothContourWithBilateral(const std::vector<cv::Point2f>& contour, int windowSize, double spatialSigma, double intensitySigma) {
     std::vector<cv::Point2f> smoothedContour(contour.size());
-    int n = contour.size();
+    int n = (int)contour.size();
 
     for (int i = 0; i < n; ++i) {
         cv::Point2f smoothedPoint(0, 0);

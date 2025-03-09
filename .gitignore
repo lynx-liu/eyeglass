@@ -4,3 +4,9 @@
 x64/
 userID
 readme.pdf
+detector/Debug/
+detector/Release/
+eyeglass/Debug/
+eyeglass/Release/
+Release/
+Debug/

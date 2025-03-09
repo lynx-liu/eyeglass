@@ -1,9 +1,23 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
 
 #define CVUI_IMPLEMENTATION
 #include "cvui.h"
-#include "detector.h"
+
+#include "../detector/detector.h"
+#ifdef _WIN64
+#ifdef _DEBUG
+#pragma comment(lib,"../x64/Debug/detector.lib")
+#else
+#pragma comment(lib,"../x64/Release/detector.lib")
+#endif
+#else
+#ifdef _DEBUG
+#pragma comment(lib,"../Debug/detector.lib")
+#else
+#pragma comment(lib,"../Release/detector.lib")
+#endif
+#endif
 
 #define CV_EDIT_VIEW	"EyeGlass"
 

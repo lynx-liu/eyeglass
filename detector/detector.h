@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////
+﻿///////////////////////////////////////////////////
 //				date: 2022.06.30
 //				author: 刘立向  
 //				email: 13651417694@126.com
@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <thread>
+#include <opencv2/opencv.hpp>
 
 #include "debug.h"
 #include "fps.hpp"

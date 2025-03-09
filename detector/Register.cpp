@@ -1,13 +1,14 @@
-///////////////////////////////////////////////////
+﻿///////////////////////////////////////////////////
 //				date: 2025.03.09
 //				author: 刘立向  
 //				email: 13651417694@126.com
 //				qq: 515311445
 ///////////////////////////////////////////////////
 
-#include "stdafx.h"
-#include "Register.h"
+#include <windows.h>
+#include <intrin.h>
 #include <codecvt>
+#include "Register.h"
 
 Register::Register()
 {
@@ -42,7 +43,7 @@ bool Register::isRegisted(const char* code) {
     __cpuid(cpuInfo, 1); // EAX=1 查询 Processor ID
     dwIDESerial = (cpuInfo[0] & 0xFFFFFFFFl + cpuInfo[3] & 0xFFFFFFFFl) & 0xFFFFFFFFl;//cpuInfo[1]可能每次不一样
 
-    sscanf(code, "%x", &dwCode);
+    sscanf_s(code, "%x", &dwCode);
     while (dwCode)
     {
         dwSerial = dwSerial * 10 + dwCode % 10;

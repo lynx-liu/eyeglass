@@ -3,7 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.33214.272
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eyeglass", "eyeglass.vcxproj", "{1055BF95-F282-47E5-8F9C-5373423040FC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "detector", "detector\detector.vcxproj", "{1055BF95-F282-47E5-8F9C-5373423040FC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eyeglass", "eyeglass\eyeglass.vcxproj", "{7AD66930-9F83-4E1D-8DD5-FE21F125D482}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1055BF95-F282-47E5-8F9C-5373423040FC} = {1055BF95-F282-47E5-8F9C-5373423040FC}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +26,14 @@ Global
 		{1055BF95-F282-47E5-8F9C-5373423040FC}.Release|x64.Build.0 = Release|x64
 		{1055BF95-F282-47E5-8F9C-5373423040FC}.Release|x86.ActiveCfg = Release|Win32
 		{1055BF95-F282-47E5-8F9C-5373423040FC}.Release|x86.Build.0 = Release|Win32
+		{7AD66930-9F83-4E1D-8DD5-FE21F125D482}.Debug|x64.ActiveCfg = Debug|x64
+		{7AD66930-9F83-4E1D-8DD5-FE21F125D482}.Debug|x64.Build.0 = Debug|x64
+		{7AD66930-9F83-4E1D-8DD5-FE21F125D482}.Debug|x86.ActiveCfg = Debug|Win32
+		{7AD66930-9F83-4E1D-8DD5-FE21F125D482}.Debug|x86.Build.0 = Debug|Win32
+		{7AD66930-9F83-4E1D-8DD5-FE21F125D482}.Release|x64.ActiveCfg = Release|x64
+		{7AD66930-9F83-4E1D-8DD5-FE21F125D482}.Release|x64.Build.0 = Release|x64
+		{7AD66930-9F83-4E1D-8DD5-FE21F125D482}.Release|x86.ActiveCfg = Release|Win32
+		{7AD66930-9F83-4E1D-8DD5-FE21F125D482}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

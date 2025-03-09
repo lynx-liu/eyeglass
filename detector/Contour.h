@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////
+﻿///////////////////////////////////////////////////
 //				date: 2025.01.10
 //				author: 刘立向  
 //				email: 13651417694@126.com
@@ -7,6 +7,8 @@
 
 #ifndef CONTOUR_H
 #define CONTOUR_H
+
+#include <opencv2/opencv.hpp>
 
 inline double distance(const cv::Point2f& pt1, const cv::Point2f& pt2);
 
