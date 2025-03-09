@@ -90,7 +90,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
         }
 
         int key = cv::waitKeyEx(20);
-        debug("key: %d\r\n", key);
+        if(key!=KEY_UNPRESS) debug("key: %d\r\n", key);
         switch (key) {
         case KEY_UNPRESS:
             if (!isEdit) return key;
