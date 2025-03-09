@@ -6,6 +6,7 @@
 
 #define CV_EDIT_VIEW	"EyeGlass"
 
+bool isEdit = false;
 cv::Rect settingsRect = {};
 void mouseCallback(int event, int x, int y, int flags, void* userdata) {
     Detector* detector = static_cast<Detector*>(userdata);
@@ -18,7 +19,8 @@ void mouseCallback(int event, int x, int y, int flags, void* userdata) {
     else {
         cv::Rect editArea = detector->getEditArea();
         if (editArea.contains(point)) {
-            detector->onMouse(event, x, y);
+            if(detector->onMouse(event, x, y))
+                isEdit = true;
         }
     }
 }
@@ -52,10 +54,12 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
         cvui::window(background, settingX, settingY, settingWidth, settingHeight, "Setting");
 
         cvui::text(background, settingX + padding, settingY + margin, "Edge Curl");
-        cvui::trackbar(background, settingX + padding * 2, settingY + margin + padding, settingWidth - padding * 3, &medianBlurTrack, 0, 9, 0, "%.0Lf");
+        if(cvui::trackbar(background, settingX + padding * 2, settingY + margin + padding, settingWidth - padding * 3, &medianBlurTrack, 0, 9, 0, "%.0Lf"))
+            isEdit = true;
 
         cvui::text(background, settingX + padding, settingY + (margin + padding) * 2, "Morph Kernel");
-        cvui::trackbar(background, settingX + padding * 2, settingY + (margin + padding) * 2 + padding, settingWidth - padding * 3, &morphKTrack, 0, 9, 1, "%.0Lf");
+        if(cvui::trackbar(background, settingX + padding * 2, settingY + (margin + padding) * 2 + padding, settingWidth - padding * 3, &morphKTrack, 0, 9, 1, "%.0Lf"))
+            isEdit = true;
 
         if (cvui::button(background, settingX + settingWidth - margin * 4, settingY + settingHeight - (margin + padding), "FindNext")) {
             detector->findNext();
@@ -158,7 +162,7 @@ int main(int argc, char* argv[]) {
 	double frameCount = capture.get(cv::CAP_PROP_FRAME_COUNT);
 
 	int n = 1;
-	bool isEdit = frameCount<=1;
+	isEdit = frameCount<=1;
 	cv::Mat background(screenSize, CV_8UC3, cv::Scalar(0));
 	while (!frame.empty() || ++n < argc) {
 		if (frame.empty() && capture.open(argv[n])) {

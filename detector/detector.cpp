@@ -223,7 +223,7 @@ void Detector::onKey(int key) {
     }
 }
 
-void Detector::onMouse(int event, int x, int y) {
+bool Detector::onMouse(int event, int x, int y) {
     if (event == cv::EVENT_LBUTTONDOWN) {
         mousePoint = cv::Point(x, y);
         isEditSelectArea = true;
@@ -256,6 +256,7 @@ void Detector::onMouse(int event, int x, int y) {
             mousePoint = cv::Point(x, y);
         }
     }
+    return isEditSelectArea;
 }
 
 cv::Rect Detector::getEditArea() {

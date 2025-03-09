@@ -26,7 +26,7 @@ public:
     void findNext();
     bool saveToDxf(char *filename);
     void onKey(int key);
-    void onMouse(int event, int x, int y);
+    bool onMouse(int event, int x, int y);
     cv::Rect getEditArea();
     void reset(cv::Rect rect = {});
 
