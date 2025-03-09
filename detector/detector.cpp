@@ -224,31 +224,36 @@ void Detector::onKey(int key) {
 }
 
 void Detector::onMouse(int event, int x, int y) {
-    mousePoint = cv::Point(x, y);
-
     if (event == cv::EVENT_LBUTTONDOWN) {
+        mousePoint = cv::Point(x, y);
         isEditSelectArea = true;
         selectRect = cv::Rect(x, y, 0, 0);
     }
     else if (event == cv::EVENT_MOUSEMOVE) {
         if (isEditSelectArea) {
-            int rectX = std::min(selectRect.x, x);
-            int rectY = std::min(selectRect.y, y);
-            int rectWidth = std::abs(x - selectRect.x);
-            int rectHeight = std::abs(y - selectRect.y);
+            int rectX = std::min(mousePoint.x, x);
+            int rectY = std::min(mousePoint.y, y);
+            int rectWidth = std::abs(x - mousePoint.x);
+            int rectHeight = std::abs(y - mousePoint.y);
 
             selectRect = cv::Rect(rectX, rectY, rectWidth, rectHeight);
+        }
+        else {
+            mousePoint = cv::Point(x, y);
         }
     }
     else if (event == cv::EVENT_LBUTTONUP) {
         if (isEditSelectArea) {
             isEditSelectArea = false;
-            int rectX = std::min(selectRect.x, x);
-            int rectY = std::min(selectRect.y, y);
-            int rectWidth = std::abs(x - selectRect.x);
-            int rectHeight = std::abs(y - selectRect.y);
+            int rectX = std::min(mousePoint.x, x);
+            int rectY = std::min(mousePoint.y, y);
+            int rectWidth = std::abs(x - mousePoint.x);
+            int rectHeight = std::abs(y - mousePoint.y);
 
             selectRect = cv::Rect(rectX, rectY, rectWidth, rectHeight);
+        }
+        else {
+            mousePoint = cv::Point(x, y);
         }
     }
 }
