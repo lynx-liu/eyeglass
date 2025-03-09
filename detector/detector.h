@@ -21,7 +21,7 @@ class Detector {
 public:
     Detector();
     ~Detector();
-    void detect(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background);
+    void detect(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, cv::Mat background);
     void drawFrame(cv::Mat frame, cv::Mat background);
     void findNext();
     bool saveToDxf(char *filename);
@@ -31,8 +31,8 @@ public:
     void reset(cv::Rect rect = {});
 
 protected:
-    std::vector<cv::Point2f> findExternalContour(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background);
-    std::vector<cv::Point2f> findContourInMask(cv::Mat frame, int medianBlurKSize, int morphKSize, const std::vector<cv::Point>& contour, cv::Mat background);
+    std::vector<cv::Point2f> findExternalContour(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, cv::Mat background);
+    std::vector<cv::Point2f> findContourInMask(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, const std::vector<cv::Point>& contour, cv::Mat background);
 
 private:
     cv::Rect editArea;

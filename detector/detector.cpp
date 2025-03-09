@@ -42,7 +42,7 @@ void Detector::reset(cv::Rect rect)
     eyeglassContours.clear();
 }
 
-std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background) {
+std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, cv::Mat background) {
     cv::Mat gray;
     if (frame.channels() > 1) {
         cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
@@ -51,7 +51,7 @@ std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int median
         frame.copyTo(gray);
     }
     
-    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(5, 5));
+    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(clipLimit, cv::Size(5, 5));
     clahe->apply(gray, gray);
 
     medianBlur(gray, gray, medianBlurKSize);
@@ -84,7 +84,7 @@ std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int median
     return {};
 }
 
-std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, int medianBlurKSize, int morphKSize, const std::vector<cv::Point>& contour, cv::Mat background) {
+std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, const std::vector<cv::Point>& contour, cv::Mat background) {
     cv::Mat gray;
     if (frame.channels() > 1) {
         cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
@@ -93,7 +93,7 @@ std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, int medianBl
         frame.copyTo(gray);
     }
 
-    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(15.0, cv::Size(5, 5));
+    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(clipLimit, cv::Size(5, 5));
     clahe->apply(gray, gray);
 
     medianBlur(gray, gray, medianBlurKSize);
@@ -134,17 +134,17 @@ std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, int medianBl
     return {};
 }
 
-void Detector::detect(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background)
+void Detector::detect(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, cv::Mat background)
 {
     if (eyeglassContours.empty()) {
-        currentContour = findExternalContour(frame, medianBlurKSize, morphKSize, background);
+        currentContour = findExternalContour(frame, clipLimit, medianBlurKSize, morphKSize, background);
     }
     else {
         drawContours(frame, eyeglassContours, cv::Scalar(0, 255, 0));
 
         std::vector<cv::Point> contour = scaleContour(eyeglassContours.back(), 7);
         if (!contour.empty()) {
-            currentContour = findContourInMask(frame, medianBlurKSize, morphKSize, contour, background);
+            currentContour = findContourInMask(frame, clipLimit, medianBlurKSize, morphKSize, contour, background);
         }
         else {
             currentContour.clear();

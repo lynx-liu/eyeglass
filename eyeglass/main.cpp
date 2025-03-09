@@ -30,22 +30,24 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
     Detector* detector = static_cast<Detector*>(userdata);
 
     bool refresh = false;
-    int medianBlurKSize = -1, morphKSize = -1;
-    int medianBlurTrack = 0, morphKTrack = 7;
+    int clipLimitValue = -1, medianBlurKSize = -1, morphKSize = -1;
+    int clipLimitTrack = 0, medianBlurTrack = 0, morphKTrack = 7;
 
-    int margin = 50, padding = 15, settingWidth = 240, settingHeight = 270;
+    int margin = 50, padding = 15, settingWidth = 240, settingHeight = 360;
     int settingX = background.cols - settingWidth - margin, settingY = background.rows - settingHeight - margin;
     settingsRect = { settingX, settingY, settingWidth, settingHeight };
     detector->reset({ 0, 0, frame.cols, frame.rows });
 
     while (cv::getWindowProperty(CV_EDIT_VIEW, cv::WND_PROP_VISIBLE)) {
-        if ((medianBlurKSize != medianBlurTrack || morphKSize != morphKTrack) && !cvui::mouse(cvui::LEFT_BUTTON, cvui::IS_DOWN) && !cvui::mouse(cvui::RIGHT_BUTTON, cvui::IS_DOWN)
+        if ((clipLimitValue != clipLimitTrack || medianBlurKSize != medianBlurTrack || morphKSize != morphKTrack) 
+            && !cvui::mouse(cvui::LEFT_BUTTON, cvui::IS_DOWN) && !cvui::mouse(cvui::RIGHT_BUTTON, cvui::IS_DOWN)
             || refresh) {
+            clipLimitValue = clipLimitTrack;
             medianBlurKSize = medianBlurTrack;
             morphKSize = morphKTrack;
             refresh = false;
 
-            detector->detect(frame.clone(), (medianBlurKSize << 1) + 1, morphKSize + 1, background);
+            detector->detect(frame.clone(), (clipLimitValue + 1) * 3, (medianBlurKSize << 1) + 1, morphKSize + 1, background);
         }
         else {
             detector->drawFrame(frame.clone(), background);
@@ -59,6 +61,10 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
 
         cvui::text(background, settingX + padding, settingY + (margin + padding) * 2, "Morph Kernel");
         if(cvui::trackbar(background, settingX + padding * 2, settingY + (margin + padding) * 2 + padding, settingWidth - padding * 3, &morphKTrack, 0, 9, 1, "%.0Lf"))
+            isEdit = true;
+
+        cvui::text(background, settingX + padding, settingY + (margin + padding) * 3, "clipLimit");
+        if (cvui::trackbar(background, settingX + padding * 2, settingY + (margin + padding) * 3 + padding, settingWidth - padding * 3, &clipLimitTrack, 0, 9, 1, "%.0Lf"))
             isEdit = true;
 
         if (cvui::button(background, settingX + settingWidth - margin * 4, settingY + settingHeight - (margin + padding), "FindNext")) {
