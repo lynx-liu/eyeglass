@@ -194,33 +194,34 @@ bool Detector::saveToDxf(char *filename) {
     return true;
 }
 
-void Detector::onKey(int key) {
+bool Detector::onKey(int key) {
     switch (key) {
     case KEY_LEFT:
         moveContour(currentContour, selectRect, -1, 0);
-        break;
+        return true;
 
     case KEY_RIGHT:
         moveContour(currentContour, selectRect, 1, 0);
-        break;
+        return true;
 
     case KEY_TOP:
         moveContour(currentContour, selectRect, 0, -1);
-        break;
+        return true;
 
     case KEY_BOTTOM:
         moveContour(currentContour, selectRect, 0, 1);
-        break;
+        return true;
 
     case KEY_DEL:
         deleteContour(currentContour, selectRect);
-        break;
+        return true;
 
     case 'i':
     case 'I':
         insertPoint(currentContour, mousePoint);
-        break;
+        return true;
     }
+    return false;
 }
 
 bool Detector::onMouse(int event, int x, int y) {

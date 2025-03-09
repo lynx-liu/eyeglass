@@ -109,7 +109,8 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             break;
 
         default:
-            detector->onKey(key);
+            if (detector->onKey(key))
+                isEdit = true;
             break;
         }
     }

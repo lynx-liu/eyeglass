@@ -25,7 +25,7 @@ public:
     void drawFrame(cv::Mat frame, cv::Mat background);
     void findNext();
     bool saveToDxf(char *filename);
-    void onKey(int key);
+    bool onKey(int key);
     bool onMouse(int event, int x, int y);
     cv::Rect getEditArea();
     void reset(cv::Rect rect = {});
