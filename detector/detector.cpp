@@ -44,7 +44,12 @@ void Detector::reset(cv::Rect rect)
 
 std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background) {
     cv::Mat gray;
-    cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+    if (frame.channels() > 1) {
+        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+    }
+    else {
+        frame.copyTo(gray);
+    }
     
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(5, 5));
     clahe->apply(gray, gray);
@@ -81,7 +86,12 @@ std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, int median
 
 std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, int medianBlurKSize, int morphKSize, const std::vector<cv::Point>& contour, cv::Mat background) {
     cv::Mat gray;
-    cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+    if (frame.channels() > 1) {
+        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+    }
+    else {
+        frame.copyTo(gray);
+    }
 
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(15.0, cv::Size(5, 5));
     clahe->apply(gray, gray);
@@ -126,8 +136,6 @@ std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, int medianBl
 
 void Detector::detect(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Mat background)
 {
-    fps_.tic();
-
     if (eyeglassContours.empty()) {
         currentContour = findExternalContour(frame, medianBlurKSize, morphKSize, background);
     }
@@ -143,35 +151,31 @@ void Detector::detect(cv::Mat frame, int medianBlurKSize, int morphKSize, cv::Ma
         }
     }
 
-    if(!currentContour.empty()) drawContour(frame, currentContour, cv::Scalar(255, 0, 0), true);
-    if (m_register.showQQ()) putText(frame, m_register.getMark(), cv::Point(frame.cols / 3, frame.rows / 2), cv::FONT_HERSHEY_COMPLEX, 1.2, cv::Scalar(0,0,255), 2);
-
-    fps_.toc();
-
-    char szText[_MAX_PATH] = { 0 };
-    sprintf_s(szText, _MAX_PATH, "%s", fps_.toString().c_str());
-    cv::putText(frame, szText, cv::Point(0, frame.rows - 3), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 128, 255));
-    
-    frame.copyTo(background(cv::Rect(0, 0, frame.cols, frame.rows)));
+    drawFrame(frame, background);
 }
 
 void Detector::drawFrame(cv::Mat frame, cv::Mat background)
 {
     fps_.tic();
 
-    if (!eyeglassContours.empty()) drawContours(frame, eyeglassContours, cv::Scalar(0, 255, 0));
-    if (!currentContour.empty()) drawContour(frame, currentContour, cv::Scalar(255, 0, 0), true);
-    cv::rectangle(frame, selectRect, cv::Scalar(255, 0, 255), 2);
+    if (frame.channels() > 1) {
+        frame.copyTo(background(cv::Rect(0, 0, frame.cols, frame.rows)));
+    }
+    else {
+        cv::cvtColor(frame, background(cv::Rect(0, 0, frame.cols, frame.rows)), cv::COLOR_GRAY2BGR);
+    }
 
-    if (m_register.showQQ()) putText(frame, m_register.getMark(), cv::Point(frame.cols / 3, frame.rows / 2), cv::FONT_HERSHEY_COMPLEX, 1.2, cv::Scalar(0, 0, 255), 2);
+    if (!eyeglassContours.empty()) drawContours(background, eyeglassContours, cv::Scalar(0, 255, 0));
+    if (!currentContour.empty()) drawContour(background, currentContour, cv::Scalar(255, 0, 0), true);
+    cv::rectangle(background, selectRect, cv::Scalar(255, 0, 255), 2);
+
+    if (m_register.showQQ()) putText(background, m_register.getMark(), cv::Point(frame.cols / 3, frame.rows / 2), cv::FONT_HERSHEY_COMPLEX, 1.2, cv::Scalar(0, 0, 255), 2);
 
     fps_.toc();
 
     char szText[_MAX_PATH] = { 0 };
     sprintf_s(szText, _MAX_PATH, "%s", fps_.toString().c_str());
-    cv::putText(frame, szText, cv::Point(0, frame.rows - 3), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 128, 255));
-
-    frame.copyTo(background(cv::Rect(0, 0, frame.cols, frame.rows)));
+    cv::putText(background, szText, cv::Point(0, frame.rows - 3), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 128, 255));
 }
 
 void Detector::findNext() {
