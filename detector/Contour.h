@@ -22,8 +22,8 @@ void deleteContour(std::vector<cv::Point2f>& contour, cv::Rect& area);
 bool isPointBetween(const cv::Point2f& p1, const cv::Point2f& p2, const cv::Point2f& newPoint);
 void insertPoint(std::vector<cv::Point2f>& contour, const cv::Point& newPoint);
 std::vector<cv::Point2f> smoothContourWithSlidingWindow(const std::vector<cv::Point2f>& contour, int windowSize = 15);
-std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point>& contour, int kernelSize = 25, double sigma = 150.0);
-std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point2f>& contour, int kernelSize = 25, double sigma = 150.0);
+std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point>& contour, int kernelSize = 0, double sigma = 5.0);
+std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point2f>& contour, int kernelSize = 0, double sigma = 5.0);
 std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>& contour, int numPoints = 250, int numThreads = 4);
 std::vector<cv::Point2f> smoothContourWithBilateral(const std::vector<cv::Point2f>& contour, int windowSize = 15, double spatialSigma = 10.0, double intensitySigma = 50.0);
 
