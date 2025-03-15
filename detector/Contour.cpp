@@ -170,7 +170,9 @@ std::vector<cv::Point2f> smoothContourWithSlidingWindow(const std::vector<cv::Po
     }
 
     // 闭合轮廓：将最后一个点连接到第一个点
-    smoothedContour.push_back(smoothedContour[0]);
+    if (!smoothedContour.empty() && smoothedContour.back() != smoothedContour.front()) {
+        smoothedContour.push_back(smoothedContour.front());
+    }
     return smoothedContour;
 }
 
@@ -193,7 +195,9 @@ std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point>& contour, i
     }
 
     // 闭合轮廓：将最后一个点连接到第一个点
-    smoothedContour.push_back(smoothedContour[0]);
+    if (!smoothedContour.empty() && smoothedContour.back() != smoothedContour.front()) {
+        smoothedContour.push_back(smoothedContour.front());
+    }
     return smoothedContour;
 }
 
@@ -236,6 +240,10 @@ std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point2f>& contour,
         smoothedContour[i] = cv::Point2f((float)smoothedX, (float)smoothedY);
     }
 
+    // 闭合轮廓：将最后一个点连接到第一个点
+    if (!smoothedContour.empty() && smoothedContour.back() != smoothedContour.front()) {
+        smoothedContour.push_back(smoothedContour.front());
+    }
     return smoothedContour;
 }
 
@@ -281,11 +289,10 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
         smoothedContour.insert(smoothedContour.end(), segment.begin(), segment.end());
     }
 
-    // 闭合轮廓：避免空 vector 访问
-    if (!smoothedContour.empty()) {
-        smoothedContour.push_back(smoothedContour[0]);
+    // 闭合轮廓：将最后一个点连接到第一个点
+    if (!smoothedContour.empty() && smoothedContour.back() != smoothedContour.front()) {
+        smoothedContour.push_back(smoothedContour.front());
     }
-
     return smoothedContour;
 }
 
@@ -314,6 +321,8 @@ std::vector<cv::Point2f> smoothContourWithBilateral(const std::vector<cv::Point2
     }
 
     // 闭合轮廓：将最后一个点连接到第一个点
-    smoothedContour.push_back(smoothedContour[0]);
+    if (!smoothedContour.empty() && smoothedContour.back() != smoothedContour.front()) {
+        smoothedContour.push_back(smoothedContour.front());
+    }
     return smoothedContour;
 }
