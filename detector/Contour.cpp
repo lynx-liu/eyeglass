@@ -16,12 +16,16 @@ inline double distance(const cv::Point2f& pt1, const cv::Point2f& pt2) {
 // 函数定义：将 std::vector<cv::Point> 转换为 std::vector<cv::Point2f>
 std::vector<cv::Point2f> convertToPoint2f(const std::vector<cv::Point>& contour) {
     std::vector<cv::Point2f> result;
-    result.reserve(contour.size()); // 预分配空间以提高性能
+    result.reserve(contour.size() + 1); // 预分配空间以提高性能，可能需要多一个点
 
     for (const auto& point : contour) {
         result.emplace_back(point);
     }
 
+    // 如果首尾点不同，手动封闭轮廓
+    if (!contour.empty() && contour.front() != contour.back()) {
+        result.emplace_back(contour.front());
+    }
     return result;
 }
 
