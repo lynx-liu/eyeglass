@@ -301,7 +301,7 @@ bool Detector::onMouse(int event, int x, int y, int flags) {
         break;
 
     case cv::EVENT_MOUSEWHEEL: {
-        currentContour = scaleContour(currentContour, flags>0?1:-1);
+        currentContour = scaleContour(currentContour, flags<0?1:-1);
         return true;
     }
         break;
