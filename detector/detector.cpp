@@ -138,6 +138,7 @@ void Detector::detect(cv::Mat frame, double clipLimit, int medianBlurKSize, int 
 {
     if (eyeglassContours.empty()) {
         currentContour = findExternalContour(frame, clipLimit, medianBlurKSize, morphKSize, background);
+        boundRect = boundingRect(currentContour);
     }
     else {
         drawContours(frame, eyeglassContours, cv::Scalar(0, 255, 0));
@@ -154,7 +155,7 @@ void Detector::detect(cv::Mat frame, double clipLimit, int medianBlurKSize, int 
     drawFrame(frame, background);
 }
 
-void Detector::drawFrame(cv::Mat frame, cv::Mat background)
+void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
 {
     fps_.tic();
 
@@ -167,6 +168,16 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background)
 
     if (!eyeglassContours.empty()) drawContours(background, eyeglassContours, cv::Scalar(0, 255, 0));
     if (!currentContour.empty()) drawContour(background, currentContour, cv::Scalar(255, 0, 0), true);
+    if (mark) {
+        if (!boundRect.empty()) {
+            cv::rectangle(background, boundRect, cv::Scalar(255, 255, 0), 2);
+            cv::line(background, cv::Point(boundRect.x + boundRect.width / 2, boundRect.y + boundRect.height / 2), cv::Point(boundRect.x + boundRect.width / 2, boundRect.y), cv::Scalar(255, 255, 0), 2);
+            cv::line(background, cv::Point(boundRect.x, boundRect.y + boundRect.height / 2), cv::Point(boundRect.x + boundRect.width / 2, boundRect.y + boundRect.height / 2), cv::Scalar(255, 255, 0), 2);
+            cv::putText(background, std::to_string(boundRect.width), cv::Point(boundRect.x + boundRect.width / 2 - 25, boundRect.y + boundRect.height + 25), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
+            cv::putText(background, std::to_string(boundRect.height), cv::Point(boundRect.x + boundRect.width - 25, boundRect.y + boundRect.height / 2), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
+        }
+    }
+
     cv::rectangle(background, selectRect, cv::Scalar(255, 0, 255), 2);
 
     if (m_register.showQQ()) putText(background, m_register.getMark(), cv::Point(frame.cols / 3, frame.rows / 2), cv::FONT_HERSHEY_COMPLEX, 1.2, cv::Scalar(0, 0, 255), 2);

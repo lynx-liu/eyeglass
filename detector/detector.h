@@ -22,7 +22,7 @@ public:
     Detector();
     ~Detector();
     void detect(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, cv::Mat background);
-    void drawFrame(cv::Mat frame, cv::Mat background);
+    void drawFrame(cv::Mat frame, cv::Mat background, bool mark = false);
     void findNext();
     bool saveToDxf(char *filename);
     bool onKey(int key);
@@ -39,6 +39,7 @@ private:
     cv::Rect selectRect;
     bool isEditSelectArea;
     cv::Point mousePoint;
+    cv::Rect boundRect;
     std::vector<cv::Point2f> currentContour;
     std::vector<std::vector<cv::Point2f>> eyeglassContours;
 };

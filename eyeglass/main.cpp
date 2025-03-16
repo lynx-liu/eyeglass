@@ -50,7 +50,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             detector->detect(frame.clone(), (clipLimitValue + 1) * 3, (medianBlurKSize << 1) + 1, morphKSize + 1, background);
         }
         else {
-            detector->drawFrame(frame.clone(), background);
+            detector->drawFrame(frame.clone(), background, isEdit);
         }
 
         cvui::window(background, settingX, settingY, settingWidth, settingHeight, "Setting");
