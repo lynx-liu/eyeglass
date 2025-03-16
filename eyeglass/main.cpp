@@ -116,16 +116,17 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             break;
 
         case 'r':
-        case 'R': {
-            cv::Rect editArea = detector->getEditArea();
-            cv::Point mousePoint = detector->getMousePoint();
-            if (mousePoint.x <= editArea.x + editArea.width / 2)
-                angle++;
-            else angle--;
-            refresh = true;
+        case 'R':
+            if (detector->onKey(key)) {
+                isEdit = true;
 
-            isEdit = true;
-        }
+                cv::Rect editArea = detector->getEditArea();
+                cv::Point mousePoint = detector->getMousePoint();
+                if (mousePoint.x <= editArea.x + editArea.width / 2)
+                    angle++;
+                else angle--;
+                refresh = true;
+            }
             break;
 
         default:

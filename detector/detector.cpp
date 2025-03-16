@@ -239,6 +239,12 @@ bool Detector::onKey(int key) {
     case 'I':
         insertPoint(currentContour, mousePoint);
         return true;
+
+    case 'r':
+    case 'R':
+        if (eyeglassContours.empty())
+            return true;
+        break;
     }
     return false;
 }
