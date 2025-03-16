@@ -19,7 +19,7 @@ void mouseCallback(int event, int x, int y, int flags, void* userdata) {
     else {
         cv::Rect editArea = detector->getEditArea();
         if (editArea.contains(point)) {
-            if(detector->onMouse(event, x, y))
+            if(detector->onMouse(event, x, y, flags))
                 isEdit = true;
         }
     }

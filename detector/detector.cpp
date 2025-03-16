@@ -84,7 +84,7 @@ std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, double cli
     return {};
 }
 
-std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, const std::vector<cv::Point>& contour, cv::Mat background) {
+std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, const std::vector<cv::Point2f>& contour, cv::Mat background) {
     cv::Mat gray;
     if (frame.channels() > 1) {
         cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
@@ -114,7 +114,7 @@ std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, double clipL
     cv::Mat mask = cv::Mat::zeros(gray.size(), CV_8UC1);
 
     // 在掩码图像上绘制并填充给定的轮廓
-    cv::drawContours(mask, std::vector<std::vector<cv::Point>>{contour}, -1, cv::Scalar(255), cv::FILLED);
+    cv::drawContours(mask, std::vector<std::vector<cv::Point>>{convertToPoint(contour)}, -1, cv::Scalar(255), cv::FILLED);
 
     // 应用掩码到原图像，只保留轮廓范围内的区域
     gray.setTo(cv::Scalar(0), ~mask);
@@ -143,7 +143,7 @@ void Detector::detect(cv::Mat frame, double clipLimit, int medianBlurKSize, int 
     else {
         drawContours(frame, eyeglassContours, cv::Scalar(0, 255, 0));
 
-        std::vector<cv::Point> contour = scaleContour(eyeglassContours.back(), 7);
+        std::vector<cv::Point2f> contour = scaleContour(eyeglassContours.back(), 7);
         if (!contour.empty()) {
             currentContour = findContourInMask(frame, clipLimit, medianBlurKSize, morphKSize, contour, background);
         }
@@ -243,13 +243,16 @@ bool Detector::onKey(int key) {
     return false;
 }
 
-bool Detector::onMouse(int event, int x, int y) {
-    if (event == cv::EVENT_LBUTTONDOWN) {
+bool Detector::onMouse(int event, int x, int y, int flags) {
+    switch (event)
+    {
+    case cv::EVENT_LBUTTONDOWN:
         mousePoint = cv::Point(x, y);
         isEditSelectArea = true;
         selectRect = cv::Rect(x, y, 0, 0);
-    }
-    else if (event == cv::EVENT_MOUSEMOVE) {
+            break;
+
+    case cv::EVENT_MOUSEMOVE:
         if (isEditSelectArea) {
             int rectX = std::min(mousePoint.x, x);
             int rectY = std::min(mousePoint.y, y);
@@ -261,8 +264,9 @@ bool Detector::onMouse(int event, int x, int y) {
         else {
             mousePoint = cv::Point(x, y);
         }
-    }
-    else if (event == cv::EVENT_LBUTTONUP) {
+        break;
+
+    case cv::EVENT_LBUTTONUP:
         if (isEditSelectArea) {
             isEditSelectArea = false;
             int rectX = std::min(mousePoint.x, x);
@@ -275,6 +279,16 @@ bool Detector::onMouse(int event, int x, int y) {
         else {
             mousePoint = cv::Point(x, y);
         }
+        break;
+
+    case cv::EVENT_MOUSEWHEEL: {
+        currentContour = scaleContour(currentContour, flags>0?1:-1);
+        return true;
+    }
+        break;
+
+    default:
+        break;
     }
     return isEditSelectArea;
 }

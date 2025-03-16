@@ -29,15 +29,30 @@ std::vector<cv::Point2f> convertToPoint2f(const std::vector<cv::Point>& contour)
     return result;
 }
 
+std::vector<cv::Point> convertToPoint(const std::vector<cv::Point2f>& contour) {
+    std::vector<cv::Point> result;
+    result.reserve(contour.size() + 1); // 预分配空间以提高性能，可能需要多一个点
+
+    for (const auto& point : contour) {
+        result.emplace_back(point);
+    }
+
+    // 如果首尾点不同，手动封闭轮廓
+    if (!contour.empty() && contour.front() != contour.back()) {
+        result.emplace_back(contour.front());
+    }
+    return result;
+}
+
 // 使用点偏移直接缩放轮廓N个像素点，N<0为放大
-std::vector<cv::Point> scaleContour(const std::vector<cv::Point2f>& contour, int N) {
+std::vector<cv::Point2f> scaleContour(const std::vector<cv::Point2f>& contour, int N) {
     cv::Point2f center(0, 0);
     for (const auto& point : contour) {
         center += point;
     }
     center /= (int)contour.size();
 
-    std::vector<cv::Point> scaleContour;
+    std::vector<cv::Point2f> scaleContour;
     scaleContour.reserve(contour.size());
     for (const auto& point : contour) {
         cv::Point2f direction = point - center;

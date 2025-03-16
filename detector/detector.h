@@ -27,14 +27,14 @@ public:
     void findNext();
     bool saveToDxf(std::string filename);
     bool onKey(int key);
-    bool onMouse(int event, int x, int y);
+    bool onMouse(int event, int x, int y, int flags);
     cv::Point getMousePoint();
     cv::Rect getEditArea();
     void reset(cv::Rect rect = {});
 
 protected:
     std::vector<cv::Point2f> findExternalContour(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, cv::Mat background);
-    std::vector<cv::Point2f> findContourInMask(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, const std::vector<cv::Point>& contour, cv::Mat background);
+    std::vector<cv::Point2f> findContourInMask(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, const std::vector<cv::Point2f>& contour, cv::Mat background);
 
 private:
     cv::Rect editArea;

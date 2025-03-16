@@ -13,7 +13,8 @@
 inline double distance(const cv::Point2f& pt1, const cv::Point2f& pt2);
 
 std::vector<cv::Point2f> convertToPoint2f(const std::vector<cv::Point>& contour);
-std::vector<cv::Point> scaleContour(const std::vector<cv::Point2f>& contour, int N);
+std::vector<cv::Point> convertToPoint(const std::vector<cv::Point2f>& contour);
+std::vector<cv::Point2f> scaleContour(const std::vector<cv::Point2f>& contour, int N);
 int findMaxContourId(const std::vector<std::vector<cv::Point> >& contours);
 void drawContour(cv::Mat background, const std::vector<cv::Point2f>& contour, cv::Scalar scalar = cv::Scalar(255, 0, 0), bool markPoint = false);
 void drawContours(cv::Mat background, const std::vector<std::vector<cv::Point2f> >& contours, cv::Scalar scalar);
