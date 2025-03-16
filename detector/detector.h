@@ -33,7 +33,7 @@ public:
     void reset(cv::Rect rect = {});
 
 protected:
-    std::vector<cv::Point2f> findExternalContour(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, cv::Mat background);
+    std::vector<cv::Point2f> findContourInRect(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, cv::Mat background, cv::Rect roi = cv::Rect());
     std::vector<cv::Point2f> findContourInMask(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, const std::vector<cv::Point2f>& contour, cv::Mat background);
 
 private:

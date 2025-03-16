@@ -42,7 +42,7 @@ void Detector::reset(cv::Rect rect)
     eyeglassContours.clear();
 }
 
-std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, cv::Mat background) {
+std::vector<cv::Point2f> Detector::findContourInRect(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, cv::Mat background, cv::Rect roi) {
     cv::Mat gray;
     if (frame.channels() > 1) {
         cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
@@ -68,10 +68,13 @@ std::vector<cv::Point2f> Detector::findExternalContour(cv::Mat frame, double cli
     cv::Mat morphKernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(morphKSize, morphKSize));
     cv::morphologyEx(gray, gray, cv::MORPH_CLOSE, morphKernel);// 形态学闭运算
 
-    int offset = 10;
-    cv::Rect roi = cv::Rect(offset, offset, gray.cols - offset * 2, gray.rows - offset * 2);
+    if (roi.empty()) {
+        int offset = 10;
+        roi = cv::Rect(offset, offset, gray.cols - offset * 2, gray.rows - offset * 2);
+    }
+
     std::vector<std::vector<cv::Point> > contours;
-    cv::findContours(gray(roi), contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE,cv::Point(offset,offset));
+    cv::findContours(gray(roi), contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE, roi.tl());
 
     //把灰度图缩小后贴到背景右上角展示
     cv::resize(gray, gray, cv::Size(cvRound(gray.cols / 2.0), cvRound(gray.rows / 2.0)), 0, 0, cv::INTER_LINEAR);
@@ -137,18 +140,28 @@ std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, double clipL
 void Detector::detect(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, cv::Mat background)
 {
     if (eyeglassContours.empty()) {
-        currentContour = findExternalContour(frame, clipLimit, medianBlurKSize, morphKSize, background);
+        if (selectRect.empty()) {
+            currentContour = findContourInRect(frame, clipLimit, medianBlurKSize, morphKSize, background);
+        }
+        else {
+            currentContour = findContourInRect(frame, clipLimit, medianBlurKSize, morphKSize, background, selectRect);
+        }
         boundRect = boundingRect(currentContour);
     }
     else {
         drawContours(frame, eyeglassContours, cv::Scalar(0, 255, 0));
 
-        std::vector<cv::Point2f> contour = scaleContour(eyeglassContours.back(), 7);
-        if (!contour.empty()) {
-            currentContour = findContourInMask(frame, clipLimit, medianBlurKSize, morphKSize, contour, background);
+        if (selectRect.empty()) {
+            std::vector<cv::Point2f> contour = scaleContour(eyeglassContours.back(), 7);
+            if (!contour.empty()) {
+                currentContour = findContourInMask(frame, clipLimit, medianBlurKSize, morphKSize, contour, background);
+            }
+            else {
+                currentContour.clear();
+            }
         }
         else {
-            currentContour.clear();
+            currentContour = findContourInRect(frame, clipLimit, medianBlurKSize, morphKSize, background, selectRect);
         }
     }
 
