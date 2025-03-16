@@ -171,10 +171,12 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
     if (mark) {
         if (!boundRect.empty()) {
             cv::rectangle(background, boundRect, cv::Scalar(255, 255, 0), 2);
-            cv::line(background, cv::Point(boundRect.x + boundRect.width / 2, boundRect.y + boundRect.height / 2), cv::Point(boundRect.x + boundRect.width / 2, boundRect.y), cv::Scalar(255, 255, 0), 2);
-            cv::line(background, cv::Point(boundRect.x, boundRect.y + boundRect.height / 2), cv::Point(boundRect.x + boundRect.width / 2, boundRect.y + boundRect.height / 2), cv::Scalar(255, 255, 0), 2);
-            cv::putText(background, std::to_string(boundRect.width), cv::Point(boundRect.x + boundRect.width / 2 - 25, boundRect.y + boundRect.height + 25), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
-            cv::putText(background, std::to_string(boundRect.height), cv::Point(boundRect.x + boundRect.width - 25, boundRect.y + boundRect.height / 2), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
+
+            cv::Point center = cv::Point(boundRect.x + (boundRect.width >> 1), boundRect.y + (boundRect.height >> 1));
+            cv::line(background, center, cv::Point(center.x, boundRect.y), cv::Scalar(255, 255, 0), 2);
+            cv::line(background, cv::Point(boundRect.x, center.y), center, cv::Scalar(255, 255, 0), 2);
+            cv::putText(background, std::to_string(boundRect.width), cv::Point(center.x - 25, boundRect.y + boundRect.height + 25), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
+            cv::putText(background, std::to_string(boundRect.height), cv::Point(boundRect.x + boundRect.width - 25, center.y), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
         }
     }
 
