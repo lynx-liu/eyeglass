@@ -195,7 +195,7 @@ void Detector::findNext() {
     }
 }
 
-bool Detector::saveToDxf(char *filename) {
+bool Detector::saveToDxf(std::string filename) {
     if (!m_register.isRegisted()) return false;
 
     std::vector<std::vector<cv::Point2f>> contours = eyeglassContours;

@@ -23,7 +23,7 @@ class Dxf {
 public:
     Dxf();
     ~Dxf();
-    static bool SaveContoursToFile(std::vector<std::vector<cv::Point2f>> contours, char* filename);
+    static bool SaveContoursToFile(std::vector<std::vector<cv::Point2f>> contours, std::string filename);
 
 private:
     static void WriteContourToDxf(std::ofstream& dxfFile, const std::vector<cv::Point2f>& contour);

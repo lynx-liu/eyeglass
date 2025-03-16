@@ -17,7 +17,7 @@ Dxf::~Dxf()
 
 }
 
-bool Dxf::SaveContoursToFile(std::vector<std::vector<cv::Point2f>> contours, char *filename) {
+bool Dxf::SaveContoursToFile(std::vector<std::vector<cv::Point2f>> contours, std::string filename) {
     // 打开DXF文件
     std::ofstream dxfFile(filename);
     if (!dxfFile.is_open()) {

@@ -74,7 +74,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
         }
 
         if (cvui::button(background, settingX + settingWidth - margin * 2, settingY + settingHeight - (margin + padding), "Save")) {
-            if (!detector->saveToDxf("eyeglass.dxf")) {
+            if (!detector->saveToDxf(std::to_string(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count()) + ".dxf")) {
                 STARTUPINFO si;
                 ZeroMemory(&si, sizeof(si));
                 si.cb = sizeof(si);
