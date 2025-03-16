@@ -251,8 +251,8 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
     if (contour.empty()) return {};
 
     cv::RotatedRect minRect = cv::minAreaRect(contour);
-    unsigned int numPoints = (minRect.size.width + minRect.size.height) / 5;//以最小外接矩形的长宽按比例计算出一个平滑点数
-    if (numPoints < 100) numPoints = contour.size() / 5;
+    unsigned int numPoints = (int)(minRect.size.width + minRect.size.height) / 5;//以最小外接矩形的长宽按比例计算出一个平滑点数
+    if (numPoints < 100) numPoints = (int)contour.size() / 5;
 
     int numThreads = std::max(1U, std::min(numPoints >> 5, std::thread::hardware_concurrency()));
 

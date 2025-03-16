@@ -29,6 +29,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
 {
     Detector* detector = static_cast<Detector*>(userdata);
 
+    int angle = 0;
     bool refresh = false;
     int clipLimitValue = -1, medianBlurKSize = -1, morphKSize = -1;
     int clipLimitTrack = 0, medianBlurTrack = 0, morphKTrack = 7;
@@ -47,10 +48,10 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             morphKSize = morphKTrack;
             refresh = false;
 
-            detector->detect(frame.clone(), (clipLimitValue + 1) * 3, (medianBlurKSize << 1) + 1, morphKSize + 1, background);
+            detector->detect(detector->rotate(frame.clone(), angle), (clipLimitValue + 1) * 3, (medianBlurKSize << 1) + 1, morphKSize + 1, background);
         }
         else {
-            detector->drawFrame(frame.clone(), background, isEdit);
+            detector->drawFrame(detector->rotate(frame.clone(), angle), background, isEdit);
         }
 
         cvui::window(background, settingX, settingY, settingWidth, settingHeight, "Setting");
@@ -112,6 +113,19 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
         case KEY_RETURN:
         case KEY_SPACE:
             isEdit = !isEdit;
+            break;
+
+        case 'r':
+        case 'R': {
+            cv::Rect editArea = detector->getEditArea();
+            cv::Point mousePoint = detector->getMousePoint();
+            if (mousePoint.x <= editArea.x + editArea.width / 2)
+                angle++;
+            else angle--;
+            refresh = true;
+
+            isEdit = true;
+        }
             break;
 
         default:

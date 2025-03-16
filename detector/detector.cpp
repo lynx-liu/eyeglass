@@ -175,8 +175,8 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
             cv::Point center = cv::Point(boundRect.x + (boundRect.width >> 1), boundRect.y + (boundRect.height >> 1));
             cv::line(background, center, cv::Point(center.x, boundRect.y), cv::Scalar(255, 255, 0), 2);
             cv::line(background, cv::Point(boundRect.x, center.y), center, cv::Scalar(255, 255, 0), 2);
-            cv::putText(background, std::to_string(boundRect.width), cv::Point(center.x - 25, boundRect.y + boundRect.height + 25), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
-            cv::putText(background, std::to_string(boundRect.height), cv::Point(boundRect.x + boundRect.width - 25, center.y), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
+            cv::putText(background, std::to_string(boundRect.width), cv::Point(center.x - 25, std::min(frame.rows - 25, boundRect.y + boundRect.height + 25)), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
+            cv::putText(background, std::to_string(boundRect.height), cv::Point(std::min(frame.cols - 75, boundRect.x + boundRect.width - 25), center.y), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
         }
     }
 
@@ -186,6 +186,15 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
 
     fps_.toc();
     cv::putText(background, fps_.toString(), cv::Point(0, frame.rows - 3), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 128, 255));
+}
+
+cv::Mat Detector::rotate(cv::Mat frame, int angle) {
+    if (angle == 0) return frame;
+
+    cv::Point2f center = cv::Point2f(frame.cols / 2.0f, frame.rows / 2.0f);//旋转中心
+    cv::Mat rotateMat = getRotationMatrix2D(center, angle, 1.0);
+    warpAffine(frame, frame, rotateMat, frame.size());
+    return frame;
 }
 
 void Detector::findNext() {
@@ -268,6 +277,10 @@ bool Detector::onMouse(int event, int x, int y) {
         }
     }
     return isEditSelectArea;
+}
+
+cv::Point Detector::getMousePoint() {
+    return mousePoint;
 }
 
 cv::Rect Detector::getEditArea() {
