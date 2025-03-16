@@ -183,10 +183,7 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
     if (m_register.showQQ()) putText(background, m_register.getMark(), cv::Point(frame.cols / 3, frame.rows / 2), cv::FONT_HERSHEY_COMPLEX, 1.2, cv::Scalar(0, 0, 255), 2);
 
     fps_.toc();
-
-    char szText[_MAX_PATH] = { 0 };
-    sprintf_s(szText, _MAX_PATH, "%s", fps_.toString().c_str());
-    cv::putText(background, szText, cv::Point(0, frame.rows - 3), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 128, 255));
+    cv::putText(background, fps_.toString(), cv::Point(0, frame.rows - 3), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 128, 255));
 }
 
 void Detector::findNext() {
