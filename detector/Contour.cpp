@@ -247,8 +247,14 @@ std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point2f>& contour,
     return smoothedContour;
 }
 
-std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>& contour, int numPoints, int numThreads) {
-    if (contour.empty() || numThreads <= 0 || numPoints <= 0) return {};
+std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>& contour) {
+    if (contour.empty()) return {};
+
+    cv::RotatedRect minRect = cv::minAreaRect(contour);
+    unsigned int numPoints = (minRect.size.width + minRect.size.height) / 5;//以最小外接矩形的长宽按比例计算出一个平滑点数
+    if (numPoints < 100) numPoints = contour.size() / 5;
+
+    int numThreads = std::max(1U, std::min(numPoints >> 5, std::thread::hardware_concurrency()));
 
     std::vector<cv::Point2f> smoothedContour;
     std::vector<std::future<std::vector<cv::Point2f>>> futures;
@@ -274,7 +280,7 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
                 return temp[0];
             };
 
-            int localNumPoints = std::max(1, numPoints / numThreads);
+            int localNumPoints = std::max(1U, numPoints / numThreads);
             for (int i = 0; i < localNumPoints; ++i) {
                 double t = (localNumPoints > 1) ? static_cast<double>(i) / (localNumPoints - 1) : 0.0;
                 segment.push_back(bezierPoint(std::vector<cv::Point2f>(contour.begin() + start, contour.begin() + end), t));
