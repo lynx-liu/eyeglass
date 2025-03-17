@@ -16,6 +16,7 @@ std::vector<cv::Point2f> convertToPoint2f(const std::vector<cv::Point>& contour)
 std::vector<cv::Point> convertToPoint(const std::vector<cv::Point2f>& contour);
 std::vector<cv::Point2f> scaleContour(const std::vector<cv::Point2f>& contour, int N);
 int findMaxContourId(const std::vector<std::vector<cv::Point> >& contours);
+std::vector<cv::Point2f> findCornerPoints(const std::vector<cv::Point2f>& contour, double angleThreshold = 3.0);
 void drawContour(cv::Mat background, const std::vector<cv::Point2f>& contour, cv::Scalar scalar = cv::Scalar(255, 0, 0), bool markPoint = false);
 void drawContours(cv::Mat background, const std::vector<std::vector<cv::Point2f> >& contours, cv::Scalar scalar);
 void moveContour(std::vector<cv::Point2f>& contour, cv::Rect& area, int dx, int dy);

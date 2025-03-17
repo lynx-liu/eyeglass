@@ -78,6 +78,37 @@ int findMaxContourId(const std::vector<std::vector<cv::Point> >& contours)
     return index;
 }
 
+//查找拐点，建议先用贝赛尔曲线平滑后再查找
+std::vector<cv::Point2f> findCornerPoints(const std::vector<cv::Point2f>& contour, double angleThreshold) {
+    std::vector<cv::Point2f> cornerPoints;
+    if (contour.size() < 3) return cornerPoints; // 至少需要3个点才能计算角度
+
+    for (size_t i = 0; i < contour.size(); ++i) {
+        cv::Point2f A = contour[(i - 1 + contour.size()) % contour.size()];
+        cv::Point2f B = contour[i];
+        cv::Point2f C = contour[(i + 1) % contour.size()];
+
+        cv::Point2f AB = B - A;
+        cv::Point2f BC = C - B;
+
+        double dotProduct = (double)AB.x * BC.x + AB.y * BC.y;
+        double magnitudeAB = std::sqrt(AB.x * AB.x + AB.y * AB.y);
+        double magnitudeBC = std::sqrt(BC.x * BC.x + BC.y * BC.y);
+
+        if (magnitudeAB > 1e-6 && magnitudeBC > 1e-6) { // 避免除零
+            double cosTheta = dotProduct / (magnitudeAB * magnitudeBC);
+            cosTheta = std::max(-1.0, std::min(1.0, cosTheta)); // 限制在 [-1,1] 避免浮点误差
+            double angle = std::acos(cosTheta) * 180.0 / CV_PI; // 转换为角度
+
+            if (angle > angleThreshold) { // 超过目标角度的拐点
+                cornerPoints.push_back(B);
+            }
+        }
+    }
+    return cornerPoints;
+}
+
+
 void drawContour(cv::Mat background, const std::vector<cv::Point2f>& contour, cv::Scalar scalar, bool markPoint) {
     for (size_t i = 0; i < contour.size() - 1; ++i) {
         const cv::Point& p1 = contour[i];
