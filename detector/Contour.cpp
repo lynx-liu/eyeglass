@@ -293,31 +293,31 @@ std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point2f>& contour,
     return smoothedContour;
 }
 
-std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>& contour) {
+std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>& contour, const std::vector<cv::Point2f>& corners, double cornerThreshold) {
     if (contour.empty()) return {};
 
     cv::RotatedRect minRect = cv::minAreaRect(contour);
-    unsigned int numPoints = (int)(minRect.size.width + minRect.size.height) / 5;//以最小外接矩形的长宽按比例计算出一个平滑点数
-    if (numPoints < 100) numPoints = (int)contour.size() / 5;
+    unsigned int numPoints = static_cast<unsigned int>((minRect.size.width + minRect.size.height) / 5);
+    if (numPoints < 100) numPoints = static_cast<unsigned int>(contour.size() / 5);
 
     int numThreads = std::max(1U, std::min(numPoints >> 5, std::thread::hardware_concurrency()));
+    int segmentSize = std::max(1, static_cast<int>(contour.size() / numThreads));
 
     std::vector<cv::Point2f> smoothedContour;
     std::vector<std::future<std::vector<cv::Point2f>>> futures;
 
-    // 分段计算
-    int segmentSize = std::max(1, (int)contour.size() / numThreads);
     for (int t = 0; t < numThreads; ++t) {
         int start = t * segmentSize;
-        int end = (t == numThreads - 1) ? (int)contour.size() : std::min((t + 1) * segmentSize, (int)contour.size());
+        int end = (t == numThreads - 1) ? static_cast<int>(contour.size()) : std::min((t + 1) * segmentSize, static_cast<int>(contour.size()));
 
-        if (start >= contour.size()) break; // 避免越界
+        if (start >= contour.size()) break;
 
-        futures.push_back(std::async(std::launch::async, [start, end, &contour, numPoints, numThreads]() {
+        futures.push_back(std::async(std::launch::async, [start, end, &contour, numPoints, numThreads, &corners, cornerThreshold]() {
             std::vector<cv::Point2f> segment;
+
             auto bezierPoint = [](const std::vector<cv::Point2f>& points, double t) -> cv::Point2f {
-                size_t n = points.size();
                 std::vector<cv::Point2f> temp(points.begin(), points.end());
+                size_t n = points.size();
                 for (size_t k = 1; k < n; ++k) {
                     for (size_t i = 0; i < n - k; ++i) {
                         temp[i] = temp[i] * (1.0 - t) + temp[i + 1] * t;
@@ -326,27 +326,71 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
                 return temp[0];
             };
 
-            int localNumPoints = std::max(1U, numPoints / numThreads);
-            for (int i = 0; i < localNumPoints; ++i) {
-                double t = (localNumPoints > 1) ? static_cast<double>(i) / (localNumPoints - 1) : 0.0;
-                segment.push_back(bezierPoint(std::vector<cv::Point2f>(contour.begin() + start, contour.begin() + end), t));
+            // 标记该段中靠近拐点的原始点
+            std::vector<bool> isCornerNear(end - start, false);
+            for (int i = 0; i < end - start; ++i) {
+                for (const auto& corner : corners) {
+                    if (cv::norm(corner - contour[start + i]) < cornerThreshold) {
+                        isCornerNear[i] = true;
+                        break;
+                    }
+                }
             }
+
+            // 计算该段中靠近拐点的原始点的数量
+            int preservedCorners = std::count(isCornerNear.begin(), isCornerNear.end(), true);
+
+            int localNumPoints = std::max(1U, numPoints / numThreads);
+
+            // 动态调整参数 t 的间隔，根据靠近拐点的点分布
+            std::vector<double> tValues;
+            for (int i = 0; i < end - start; ++i) {
+                if (isCornerNear[i]) {
+                    // 靠近拐点的点，增加采样密度
+                    tValues.push_back(static_cast<double>(i) / (end - start - 1));
+                }
+            }
+
+            // 添加均匀分布的 t 值
+            for (int i = 0; i < localNumPoints; ++i) {
+                double t = static_cast<double>(i) / (localNumPoints - 1);
+                tValues.push_back(t);
+            }
+
+            // 去重并排序 t 值
+            std::sort(tValues.begin(), tValues.end());
+            tValues.erase(std::unique(tValues.begin(), tValues.end()), tValues.end());
+
+            // 生成贝塞尔曲线点
+            for (const auto& t : tValues) {
+                cv::Point2f newPoint = bezierPoint(std::vector<cv::Point2f>(contour.begin() + start, contour.begin() + end), t);
+                segment.push_back(newPoint);
+            }
+
             return segment;
             }));
     }
 
-    // 合并结果
     for (auto& f : futures) {
         auto segment = f.get();
         smoothedContour.insert(smoothedContour.end(), segment.begin(), segment.end());
     }
 
-    // 闭合轮廓：将最后一个点连接到第一个点
+    // 确保闭合轮廓
     if (!smoothedContour.empty() && smoothedContour.back() != smoothedContour.front()) {
         smoothedContour.push_back(smoothedContour.front());
     }
+
+    // 如果没有传入拐点，则自动检测并递归调用
+    if (corners.empty()) {
+        std::vector<cv::Point2f> cornerPoints = findCornerPoints(smoothedContour);
+        if (!cornerPoints.empty()) {
+            smoothedContour = smoothContourWithBezier(contour, cornerPoints, cornerThreshold);
+        }
+    }
     return smoothedContour;
 }
+
 
 //双边滤波
 std::vector<cv::Point2f> smoothContourWithBilateral(const std::vector<cv::Point2f>& contour, int windowSize, double spatialSigma, double intensitySigma) {
