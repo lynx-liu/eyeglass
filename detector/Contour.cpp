@@ -300,7 +300,7 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
     unsigned int numPoints = static_cast<unsigned int>((minRect.size.width + minRect.size.height) / 5);
     if (numPoints < 100) numPoints = static_cast<unsigned int>(contour.size() / 5);
 
-    int numThreads = std::max(1U, std::min(numPoints >> 5, std::thread::hardware_concurrency()));
+    int numThreads = std::max(1, static_cast<int>(std::min(numPoints >> 5, std::thread::hardware_concurrency())));
     int segmentSize = std::max(1, static_cast<int>(contour.size() / numThreads));
 
     std::vector<cv::Point2f> smoothedContour;
@@ -326,32 +326,19 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
                 return temp[0];
             };
 
-            // 标记该段中靠近拐点的原始点
-            std::vector<bool> isCornerNear(end - start, false);
+            // 动态调整参数 t 的间隔，同时标记靠近拐点的点
+            std::vector<double> tValues;
             for (int i = 0; i < end - start; ++i) {
                 for (const auto& corner : corners) {
                     if (cv::norm(corner - contour[start + i]) < cornerThreshold) {
-                        isCornerNear[i] = true;
-                        break;
+                        tValues.push_back(static_cast<double>(i) / (end - start - 1));
+                        break; // 一旦检测到靠近某个拐点，就退出循环
                     }
                 }
             }
 
-            // 计算该段中靠近拐点的原始点的数量
-            int preservedCorners = std::count(isCornerNear.begin(), isCornerNear.end(), true);
-
-            int localNumPoints = std::max(1U, numPoints / numThreads);
-
-            // 动态调整参数 t 的间隔，根据靠近拐点的点分布
-            std::vector<double> tValues;
-            for (int i = 0; i < end - start; ++i) {
-                if (isCornerNear[i]) {
-                    // 靠近拐点的点，增加采样密度
-                    tValues.push_back(static_cast<double>(i) / (end - start - 1));
-                }
-            }
-
             // 添加均匀分布的 t 值
+            int localNumPoints = std::max(1U, numPoints / numThreads);
             for (int i = 0; i < localNumPoints; ++i) {
                 double t = static_cast<double>(i) / (localNumPoints - 1);
                 tValues.push_back(t);
@@ -362,9 +349,10 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
             tValues.erase(std::unique(tValues.begin(), tValues.end()), tValues.end());
 
             // 生成贝塞尔曲线点
+            segment.reserve(tValues.size());
+            const std::vector<cv::Point2f> segmentContour(contour.begin() + start, contour.begin() + end);
             for (const auto& t : tValues) {
-                cv::Point2f newPoint = bezierPoint(std::vector<cv::Point2f>(contour.begin() + start, contour.begin() + end), t);
-                segment.push_back(newPoint);
+                segment.push_back(bezierPoint(segmentContour, t));
             }
 
             return segment;
