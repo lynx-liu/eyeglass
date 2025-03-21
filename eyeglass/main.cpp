@@ -34,7 +34,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
     int clipLimitValue = -1, medianBlurKSize = -1, morphKSize = -1;
     int clipLimitTrack = 0, medianBlurTrack = 0, morphKTrack = 7;
 
-    int margin = 50, padding = 15, settingWidth = 240, settingHeight = 360;
+    int margin = 50, padding = 15, settingWidth = 240, settingHeight = 420;
     int settingX = background.cols - settingWidth - margin, settingY = background.rows - settingHeight - margin;
     settingsRect = { settingX, settingY, settingWidth, settingHeight };
     detector->reset({ 0, 0, frame.cols, frame.rows });
@@ -67,6 +67,32 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
         cvui::text(background, settingX + padding, settingY + (margin + padding) * 3, "clipLimit");
         if (cvui::trackbar(background, settingX + padding * 2, settingY + (margin + padding) * 3 + padding, settingWidth - padding * 3, &clipLimitTrack, 0, 9, 1, "%.0Lf"))
             isEdit = true;
+
+        if (cvui::button(background, settingX + padding, settingY + (margin + padding) * 4 + padding, "R-")) {
+            if (detector->onKey('R')) {
+                isEdit = true;
+                refresh = true;
+                angle++;
+            }
+        }
+
+        if (cvui::button(background, settingX + padding + margin, settingY + (margin + padding) * 4 + padding, "R+")) {
+            if (detector->onKey('R')) {
+                isEdit = true;
+                refresh = true;
+                angle--;
+            }
+        }
+
+        if (cvui::button(background, settingX + padding + margin * 2, settingY + (margin + padding) * 4 + padding, "S+")) {
+            if (detector->onMouse(cv::EVENT_MOUSEWHEEL, 0, 0, +1))
+                isEdit = true;
+        }
+
+        if (cvui::button(background, settingX + padding + margin * 3, settingY + (margin + padding) * 4 + padding, "S-")) {
+            if (detector->onMouse(cv::EVENT_MOUSEWHEEL, 0, 0, -1))
+                isEdit = true;
+        }
 
         if (cvui::button(background, settingX + settingWidth - margin * 4, settingY + settingHeight - (margin + padding), "FindNext")) {
             detector->findNext();
