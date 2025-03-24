@@ -293,7 +293,7 @@ std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point2f>& contour,
     return smoothedContour;
 }
 
-std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>& contour, const std::vector<cv::Point2f>& corners, double cornerThreshold) {
+std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>& contour, const std::vector<cv::Point2f>& corners, double cornerThreshold, bool enableCorner) {
     if (contour.empty()) return {};
 
     cv::RotatedRect minRect = cv::minAreaRect(contour);
@@ -370,7 +370,7 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
     }
 
     // 如果没有传入拐点，则自动检测并递归调用
-    if (corners.empty()) {
+    if (enableCorner && corners.empty()) {
         std::vector<cv::Point2f> cornerPoints = findCornerPoints(smoothedContour);
         if (!cornerPoints.empty()) {
             smoothedContour = smoothContourWithBezier(contour, cornerPoints, cornerThreshold);
