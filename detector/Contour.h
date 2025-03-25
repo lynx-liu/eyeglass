@@ -27,6 +27,7 @@ std::vector<cv::Point2f> smoothContourWithSlidingWindow(const std::vector<cv::Po
 std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point>& contour, int kernelSize = 0, double sigma = 5.0);
 std::vector<cv::Point2f> gaussianSmooth(const std::vector<cv::Point2f>& contour, int kernelSize = 0, double sigma = 5.0);
 std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>& contour, const std::vector<cv::Point2f>& corners = {}, double cornerThreshold = 5.0, bool enableCorner = false);
+std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>& contour, const cv::Rect& area);
 std::vector<cv::Point2f> smoothContourWithBilateral(const std::vector<cv::Point2f>& contour, int windowSize = 5, double spatialSigma = 10.0, double intensitySigma = 50.0);
 
 #endif //CONTOUR_H

@@ -379,6 +379,86 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
     return smoothedContour;
 }
 
+std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>& contour, const cv::Rect& area) {
+    if (contour.empty()) return {};
+
+    // 1. 遍历轮廓，找出所有连续的被框选区域，保存为 [startIdx, endIdx] 对
+    std::vector<std::pair<int, int>> segments;
+    bool inSegment = false;
+    int segStart = -1;
+    for (int i = 0; i < static_cast<int>(contour.size()); i++) {
+        if (area.contains(contour[i])) {
+            if (!inSegment) {
+                inSegment = true;
+                segStart = i; // 记录当前连续区域起始索引
+            }
+        }
+        else {
+            if (inSegment) {
+                // 当前连续区域结束
+                segments.push_back({ segStart, i - 1 });
+                inSegment = false;
+            }
+        }
+    }
+    // 如果最后一直在选区内，则补充最后一个区域
+    if (inSegment) {
+        segments.push_back({ segStart, static_cast<int>(contour.size()) - 1 });
+    }
+
+    // 如果没有任何点被框选，则直接返回原轮廓
+    if (segments.empty()) return contour;
+
+    // 贝塞尔插值函数（递归迭代方式）
+    auto bezierPoint = [](const std::vector<cv::Point2f>& points, double t) -> cv::Point2f {
+        size_t n = points.size();
+        std::vector<cv::Point2f> temp(points.begin(), points.end());
+        for (size_t k = 1; k < n; ++k) {
+            for (size_t i = 0; i < n - k; ++i) {
+                temp[i] = temp[i] * (1.0 - t) + temp[i + 1] * t;
+            }
+        }
+        return temp[0];
+    };
+
+    // 2. 构造最终轮廓，将各个区段依次处理
+    std::vector<cv::Point2f> finalContour;
+    int currentIndex = 0;
+    for (const auto& seg : segments) {
+        int segStart = seg.first;
+        int segEnd = seg.second;
+        // 将 currentIndex 到 segStart-1 的点原样保留
+        for (int i = currentIndex; i < segStart; i++) {
+            finalContour.push_back(contour[i]);
+        }
+
+        // 处理选区内的点：提取连续区域并平滑
+        std::vector<cv::Point2f> insidePoints(contour.begin() + segStart, contour.begin() + segEnd + 1);
+        int originalSegmentSize = segEnd - segStart + 1;
+        int numDigits = std::to_string(originalSegmentSize).length();
+        int newNumPoints = std::max(3, originalSegmentSize / numDigits); // 至少生成3个点
+
+        std::vector<cv::Point2f> smoothedSegment;
+        for (int i = 0; i < newNumPoints; ++i) {
+            double t = (newNumPoints > 1) ? static_cast<double>(i) / (newNumPoints - 1) : 0.0;
+            smoothedSegment.push_back(bezierPoint(insidePoints, t));
+        }
+        // 将平滑后的选区插入最终轮廓
+        finalContour.insert(finalContour.end(), smoothedSegment.begin(), smoothedSegment.end());
+        currentIndex = segEnd + 1;
+    }
+    // 将 currentIndex 到末尾的部分原样保留
+    for (int i = currentIndex; i < static_cast<int>(contour.size()); i++) {
+        finalContour.push_back(contour[i]);
+    }
+
+    // 如果原轮廓是闭合的，则保证平滑后轮廓也闭合
+    if (!finalContour.empty() && finalContour.front() != finalContour.back()) {
+        finalContour.push_back(finalContour.front());
+    }
+
+    return finalContour;
+}
 
 //双边滤波
 std::vector<cv::Point2f> smoothContourWithBilateral(const std::vector<cv::Point2f>& contour, int windowSize, double spatialSigma, double intensitySigma) {

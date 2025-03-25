@@ -258,6 +258,12 @@ bool Detector::onKey(int key) {
         if (eyeglassContours.empty())
             return true;
         break;
+
+    case 'f':
+    case 'F':
+        currentContour = smoothContourWithBezier(currentContour, selectRect);
+        return true;
+        break;
     }
     return false;
 }
