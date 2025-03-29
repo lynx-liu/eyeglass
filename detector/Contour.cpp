@@ -113,9 +113,9 @@ void drawContour(cv::Mat background, const std::vector<cv::Point2f>& contour, cv
     for (size_t i = 0; i < contour.size() - 1; ++i) {
         const cv::Point& p1 = contour[i];
         const cv::Point& p2 = contour[(i + 1) % contour.size()];
-        cv::line(background, p1, p2, scalar, 2);
+        cv::line(background, p1, p2, scalar, 1);
 
-        if(markPoint) cv::circle(background, p1, 3, cv::Scalar(0, 0, 255), cv::FILLED);
+        if(markPoint) cv::circle(background, p1, 2, cv::Scalar(0, 0, 255), cv::FILLED);
     }
 }
 

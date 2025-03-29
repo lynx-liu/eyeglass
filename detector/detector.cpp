@@ -179,19 +179,20 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
         cv::cvtColor(frame, background(cv::Rect(0, 0, frame.cols, frame.rows)), cv::COLOR_GRAY2BGR);
     }
 
-    if (!eyeglassContours.empty()) drawContours(background, eyeglassContours, cv::Scalar(0, 255, 0));
-    if (!currentContour.empty()) drawContour(background, currentContour, cv::Scalar(255, 0, 0), true);
     if (mark) {
         if (!boundRect.empty()) {
-            cv::rectangle(background, boundRect, cv::Scalar(255, 255, 0), 2);
+            cv::rectangle(background, boundRect, cv::Scalar(255, 255, 0), 1);
 
             cv::Point center = cv::Point(boundRect.x + (boundRect.width >> 1), boundRect.y + (boundRect.height >> 1));
-            cv::line(background, center, cv::Point(center.x, boundRect.y), cv::Scalar(255, 255, 0), 2);
-            cv::line(background, cv::Point(boundRect.x, center.y), center, cv::Scalar(255, 255, 0), 2);
+            cv::line(background, center, cv::Point(center.x, boundRect.y), cv::Scalar(255, 255, 0), 1);
+            cv::line(background, cv::Point(boundRect.x, center.y), center, cv::Scalar(255, 255, 0), 1);
             cv::putText(background, std::to_string(boundRect.width), cv::Point(center.x - 25, std::min(frame.rows - 25, boundRect.y + boundRect.height + 25)), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
             cv::putText(background, std::to_string(boundRect.height), cv::Point(std::min(frame.cols - 75, boundRect.x + boundRect.width - 25), center.y), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
         }
     }
+
+    if (!eyeglassContours.empty()) drawContours(background, eyeglassContours, cv::Scalar(0, 255, 0));
+    if (!currentContour.empty()) drawContour(background, currentContour, cv::Scalar(255, 0, 0), true);
 
     cv::rectangle(background, selectRect, cv::Scalar(255, 0, 255), 2);
 
