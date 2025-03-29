@@ -297,8 +297,9 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
     if (contour.empty()) return {};
 
     cv::RotatedRect minRect = cv::minAreaRect(contour);
-    unsigned int numPoints = static_cast<unsigned int>((minRect.size.width + minRect.size.height) / 5);
-    if (numPoints < 100) numPoints = static_cast<unsigned int>(contour.size() / 5);
+    unsigned int numPoints = static_cast<unsigned int>(minRect.size.width + minRect.size.height);
+    int numDigits = std::to_string(numPoints).length();
+    numPoints = numPoints / (numDigits * numDigits / 3.0f);
 
     int numThreads = std::max(1, static_cast<int>(std::min(numPoints >> 5, std::thread::hardware_concurrency())));
     int segmentSize = std::max(1, static_cast<int>(contour.size() / numThreads));
@@ -434,13 +435,11 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
 
         // 处理选区内的点：提取连续区域并平滑
         std::vector<cv::Point2f> insidePoints(contour.begin() + segStart, contour.begin() + segEnd + 1);
-        int originalSegmentSize = segEnd - segStart + 1;
-        int numDigits = std::to_string(originalSegmentSize).length();
-        int newNumPoints = std::max(3, originalSegmentSize / numDigits); // 至少生成3个点
+        int numPoints = segEnd - segStart + 1;
 
         std::vector<cv::Point2f> smoothedSegment;
-        for (int i = 0; i < newNumPoints; ++i) {
-            double t = (newNumPoints > 1) ? static_cast<double>(i) / (newNumPoints - 1) : 0.0;
+        for (int i = 0; i < numPoints; ++i) {
+            double t = (numPoints > 1) ? static_cast<double>(i) / (numPoints - 1) : 0.0;
             smoothedSegment.push_back(bezierPoint(insidePoints, t));
         }
         // 将平滑后的选区插入最终轮廓
