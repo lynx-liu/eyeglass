@@ -37,6 +37,7 @@ void Detector::reset(cv::Rect rect)
 
     isEditSelectArea = false;
     selectRect = cv::Rect(0, 0, 0, 0);
+    scale = 1.0;
 
     currentContour.clear();
     eyeglassContours.clear();
@@ -152,7 +153,7 @@ void Detector::detect(cv::Mat frame, double clipLimit, int medianBlurKSize, int 
         drawContours(frame, eyeglassContours, cv::Scalar(0, 255, 0));
 
         if (selectRect.empty()) {
-            std::vector<cv::Point2f> contour = scaleContour(eyeglassContours.back(), 7);
+            std::vector<cv::Point2f> contour = scaleContour(eyeglassContours.back(), 7, computeContourCenter(eyeglassContours.back()));
             if (!contour.empty()) {
                 currentContour = findContourInMask(frame, clipLimit, medianBlurKSize, morphKSize, contour, background);
             }
@@ -203,10 +204,8 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
 }
 
 cv::Mat Detector::rotate(cv::Mat frame, int angle) {
-    if (angle == 0) return frame;
-
-    cv::Point2f center = cv::Point2f(frame.cols / 2.0f, frame.rows / 2.0f);//旋转中心
-    cv::Mat rotateMat = getRotationMatrix2D(center, angle, 1.0);
+    rotationCenter = cv::Point2f(frame.cols / 2.0f, frame.rows / 2.0f);//旋转中心
+    cv::Mat rotateMat = getRotationMatrix2D(rotationCenter, angle, scale);
     warpAffine(frame, frame, rotateMat, frame.size());
     return frame;
 }
@@ -308,7 +307,9 @@ bool Detector::onMouse(int event, int x, int y, int flags) {
         break;
 
     case cv::EVENT_MOUSEWHEEL: {
-        currentContour = scaleContour(currentContour, flags<0?1:-1);
+        int N = flags < 0 ? 1 : -1;
+        scale *= computeScale(currentContour, N);
+        currentContour = scaleContour(currentContour, N, rotationCenter);
         return true;
     }
         break;

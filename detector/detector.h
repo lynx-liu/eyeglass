@@ -42,6 +42,10 @@ private:
     bool isEditSelectArea;
     cv::Point mousePoint;
     cv::Rect boundRect;
+
+    int angle;
+    double scale;
+    cv::Point2f rotationCenter;
     std::vector<cv::Point2f> currentContour;
     std::vector<std::vector<cv::Point2f>> eyeglassContours;
 };

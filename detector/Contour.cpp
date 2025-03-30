@@ -44,24 +44,64 @@ std::vector<cv::Point> convertToPoint(const std::vector<cv::Point2f>& contour) {
     return result;
 }
 
-// 使用点偏移直接缩放轮廓N个像素点，N<0为放大
-std::vector<cv::Point2f> scaleContour(const std::vector<cv::Point2f>& contour, int N) {
+cv::Point2f computeContourCenter(const std::vector<cv::Point2f>& contour) {
     cv::Point2f center(0, 0);
+
+    // 计算轮廓所有点的平均值
     for (const auto& point : contour) {
         center += point;
     }
-    center /= (int)contour.size();
 
-    std::vector<cv::Point2f> scaleContour;
-    scaleContour.reserve(contour.size());
-    for (const auto& point : contour) {
-        cv::Point2f direction = point - center;
-        double length = distance(point, center);
-        if (length > 0) direction /= length;
-
-        scaleContour.push_back(point - direction * N);
+    // 计算平均值，得到轮廓中心点
+    if (!contour.empty()) {
+        center /= static_cast<float>(contour.size());
     }
-    return scaleContour;
+
+    return center;
+}
+
+// 计算轮廓的平均半径
+double computeAverageRadius(const std::vector<cv::Point2f>& contour) {
+    cv::Point2f center = computeContourCenter(contour);
+
+    double avgDist = 0.0;
+    for (const auto& point : contour) {
+        avgDist += cv::norm(point - center);  // 计算每个点到中心的距离
+    }
+    avgDist /= contour.size();  // 计算平均距离（平均半径）
+    return avgDist;
+}
+
+// 计算轮廓缩放 N 像素点时的缩放比例
+double computeScale(const std::vector<cv::Point2f>& contour, int N) {
+    double avgRadius = computeAverageRadius(contour);
+
+    // 计算缩放因子
+    double scale = (avgRadius - N) / avgRadius;
+    return (scale > 0) ? scale : 0;  // 确保缩放因子不会变成负数
+}
+
+// 缩放轮廓N个像素
+std::vector<cv::Point2f> scaleContour(const std::vector<cv::Point2f>& contour, int N, cv::Point2f center) {
+    // 计算轮廓的平均半径
+    double avgRadius = computeAverageRadius(contour);
+
+    // 计算缩放因子
+    double scale = (avgRadius - N) / avgRadius;
+
+    // 如果 scale 小于等于 0，表示不能缩小 N 个像素，直接返回原始轮廓
+    if (scale <= 0) {
+        return contour;
+    }
+
+    std::vector<cv::Point2f> scaledContour;
+    scaledContour.reserve(contour.size());
+
+    for (const auto& point : contour) {
+        scaledContour.push_back(center + (point - center) * scale);
+    }
+
+    return scaledContour;
 }
 
 int findMaxContourId(const std::vector<std::vector<cv::Point> >& contours)
