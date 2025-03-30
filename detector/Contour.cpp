@@ -338,8 +338,8 @@ std::vector<cv::Point2f> smoothContourWithBezier(const std::vector<cv::Point2f>&
 
     cv::RotatedRect minRect = cv::minAreaRect(contour);
     unsigned int numPoints = static_cast<unsigned int>(minRect.size.width + minRect.size.height);
-    int numDigits = std::to_string(numPoints).length();
-    numPoints = numPoints / (numDigits * numDigits / 3.0f);
+    size_t numDigits = std::to_string(numPoints).length();
+    numPoints = (unsigned int)(numPoints / (numDigits * numDigits / 3.0f));
 
     int numThreads = std::max(1, static_cast<int>(std::min(numPoints >> 5, std::thread::hardware_concurrency())));
     int segmentSize = std::max(1, static_cast<int>(contour.size() / numThreads));
