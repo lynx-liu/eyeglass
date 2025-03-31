@@ -316,7 +316,7 @@ bool Detector::onMouse(int event, int x, int y, int flags) {
     }
         break;
 
-    case cv::EVENT_LBUTTONDBLCLK:
+    case cv::EVENT_MBUTTONDBLCLK:
         currentContour = scaleContour(currentContour, 1.0/scale, rotationCenter);
         scale = 1.0;
         break;
