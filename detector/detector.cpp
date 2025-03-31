@@ -211,11 +211,13 @@ cv::Mat Detector::rotate(cv::Mat frame, int angle) {
     return frame;
 }
 
-void Detector::findNext() {
-    if (!currentContour.empty()) {
+bool Detector::findNext() {
+    if (!currentContour.empty() && scale==1.0) {
         eyeglassContours.emplace_back(currentContour);
         currentContour.clear();
+        return true;
     }
+    return false;
 }
 
 bool Detector::saveToDxf(std::string filename) {

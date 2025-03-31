@@ -95,9 +95,10 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
         }
 
         if (cvui::button(background, settingX + settingWidth - margin * 4, settingY + settingHeight - (margin + padding), "FindNext")) {
-            detector->findNext();
-            refresh = true;
-            isEdit = true;
+            if (detector->findNext()) {
+                refresh = true;
+                isEdit = true;
+            }
         }
 
         if (cvui::button(background, settingX + settingWidth - margin * 2, settingY + settingHeight - (margin + padding), "Save")) {
