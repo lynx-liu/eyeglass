@@ -25,6 +25,7 @@ public:
     void drawFrame(cv::Mat frame, cv::Mat background, bool mark = false);
     cv::Mat rotate(cv::Mat frame, int angle);
     bool findNext();
+    void scaleCurrentContour(int N);
     bool saveToDxf(std::string filename);
     bool onKey(int key);
     bool onMouse(int event, int x, int y, int flags);

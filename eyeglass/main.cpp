@@ -85,13 +85,13 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
         }
 
         if (cvui::button(background, settingX + padding + margin * 2, settingY + (margin + padding) * 4 + padding, "S+")) {
-            if (detector->onMouse(cv::EVENT_MOUSEWHEEL, 0, 0, +1))
-                isEdit = true;
+            detector->scaleCurrentContour(+1);
+            isEdit = true;
         }
 
         if (cvui::button(background, settingX + padding + margin * 3, settingY + (margin + padding) * 4 + padding, "S-")) {
-            if (detector->onMouse(cv::EVENT_MOUSEWHEEL, 0, 0, -1))
-                isEdit = true;
+            detector->scaleCurrentContour(-1);
+            isEdit = true;
         }
 
         if (cvui::button(background, settingX + settingWidth - margin * 4, settingY + settingHeight - (margin + padding), "FindNext")) {

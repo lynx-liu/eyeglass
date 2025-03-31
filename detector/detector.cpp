@@ -220,6 +220,10 @@ bool Detector::findNext() {
     return false;
 }
 
+void Detector::scaleCurrentContour(int N) {
+    currentContour = scaleContour(currentContour, -N, rotationCenter);
+}
+
 bool Detector::saveToDxf(std::string filename) {
     if (!m_register.isRegisted()) return false;
 
