@@ -83,12 +83,10 @@ double computeScale(const std::vector<cv::Point2f>& contour, int N) {
 
 // 缩放轮廓N个像素
 std::vector<cv::Point2f> scaleContour(const std::vector<cv::Point2f>& contour, int N, cv::Point2f center) {
-    // 计算轮廓的平均半径
-    double avgRadius = computeAverageRadius(contour);
+    return scaleContour(contour, computeScale(contour, N), center);
+}
 
-    // 计算缩放因子
-    double scale = (avgRadius - N) / avgRadius;
-
+std::vector<cv::Point2f> scaleContour(const std::vector<cv::Point2f>& contour, double scale, cv::Point2f center) {
     // 如果 scale 小于等于 0，表示不能缩小 N 个像素，直接返回原始轮廓
     if (scale <= 0) {
         return contour;

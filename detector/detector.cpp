@@ -308,10 +308,16 @@ bool Detector::onMouse(int event, int x, int y, int flags) {
 
     case cv::EVENT_MOUSEWHEEL: {
         int N = flags < 0 ? 1 : -1;
-        scale *= computeScale(currentContour, N);
-        currentContour = scaleContour(currentContour, N, rotationCenter);
+        double scaleN = computeScale(currentContour, N);
+        currentContour = scaleContour(currentContour, scaleN, rotationCenter);
+        scale *= scaleN;//相对原始图的累积缩放因子
         return true;
     }
+        break;
+
+    case cv::EVENT_LBUTTONDBLCLK:
+        currentContour = scaleContour(currentContour, 1.0/scale, rotationCenter);
+        scale = 1.0;
         break;
 
     default:
