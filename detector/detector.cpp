@@ -314,7 +314,7 @@ bool Detector::onMouse(int event, int x, int y, int flags) {
         break;
 
     case cv::EVENT_MOUSEWHEEL: {
-        int N = flags < 0 ? 1 : -1;
+        int N = flags < 0 ? 8 : -8;
         double scaleN = computeScale(currentContour, N);
         currentContour = scaleContour(currentContour, scaleN, rotationCenter);
         scale *= scaleN;//相对原始图的累积缩放因子
