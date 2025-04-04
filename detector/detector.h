@@ -31,7 +31,7 @@ public:
     bool onMouse(int event, int x, int y, int flags);
     cv::Point getMousePoint();
     cv::Rect getEditArea();
-    void reset(cv::Rect rect = {});
+    void reset(cv::Rect rect = {}, double pxToMm = 1.0);
 
 protected:
     std::vector<cv::Point2f> findContourInRect(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, cv::Mat background, cv::Rect roi = cv::Rect());
@@ -44,6 +44,7 @@ private:
     cv::Point mousePoint;
     cv::Rect boundRect;
 
+    double PxToMM;
     int angle;
     double scale;
     cv::Point2f rotationCenter;

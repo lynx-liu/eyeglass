@@ -5,6 +5,7 @@
 #include "cvui.h"
 
 #define CV_EDIT_VIEW	"EyeGlass"
+const double PX_TO_MM = 25.4; //1cm = 254px
 
 bool isEdit = false;
 cv::Rect settingsRect = {};
@@ -25,7 +26,7 @@ void mouseCallback(int event, int x, int y, int flags, void* userdata) {
     }
 }
 
-int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& isEdit, void* userdata)
+int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& isEdit, double pxToMm, void* userdata)
 {
     Detector* detector = static_cast<Detector*>(userdata);
 
@@ -37,7 +38,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
     int margin = 50, padding = 15, settingWidth = 240, settingHeight = 420;
     int settingX = background.cols - settingWidth - margin, settingY = background.rows - settingHeight - margin;
     settingsRect = { settingX, settingY, settingWidth, settingHeight };
-    detector->reset({ 0, 0, frame.cols, frame.rows });
+    detector->reset({ 0, 0, frame.cols, frame.rows }, pxToMm);
 
     while (cv::getWindowProperty(CV_EDIT_VIEW, cv::WND_PROP_VISIBLE)) {
         if ((clipLimitValue != clipLimitTrack || medianBlurKSize != medianBlurTrack || morphKSize != morphKTrack) 
@@ -225,7 +226,7 @@ int main(int argc, char* argv[]) {
 		double scale = frame.rows / std::min(960.0, screenSize.height*1.0);
 		cv::resize(frame, frame, cv::Size(cvRound(frame.cols / scale), cvRound(frame.rows / scale)), 0, 0, cv::INTER_LINEAR);
 
-		if (refreshUI(frame, background, writer, isEdit, &detector) == KEY_ESCAPE)
+		if (refreshUI(frame, background, writer, isEdit, PX_TO_MM/scale, &detector) == KEY_ESCAPE)
 			break;
 
 		background.setTo(cv::Scalar(0));//清空背景

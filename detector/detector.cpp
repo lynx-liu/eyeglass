@@ -31,9 +31,10 @@ Detector::~Detector()
     reset();
 }
 
-void Detector::reset(cv::Rect rect)
+void Detector::reset(cv::Rect rect, double pxToMm)
 {
     editArea = rect;
+    PxToMM = pxToMm;
 
     isEditSelectArea = false;
     selectRect = cv::Rect(0, 0, 0, 0);
@@ -188,8 +189,14 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
             cv::Point center = cv::Point(boundRect.x + (boundRect.width >> 1), boundRect.y + (boundRect.height >> 1));
             cv::line(roi, center, cv::Point(center.x, boundRect.y), cv::Scalar(255, 255, 0), 1);
             cv::line(roi, cv::Point(boundRect.x, center.y), center, cv::Scalar(255, 255, 0), 1);
-            cv::putText(roi, std::to_string(boundRect.width), cv::Point(center.x - 25, std::min(frame.rows - 25, boundRect.y + boundRect.height + 25)), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
-            cv::putText(roi, std::to_string(boundRect.height), cv::Point(std::min(frame.cols - 75, boundRect.x + boundRect.width - 25), center.y), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
+
+            std::ostringstream ossWidth;//格式化输出
+            ossWidth << std::fixed << std::setprecision(2) << (boundRect.width / PxToMM);
+            cv::putText(roi, ossWidth.str(), cv::Point(center.x - 25, std::min(frame.rows - 25, boundRect.y + boundRect.height + 25)), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
+
+            std::ostringstream ossHeight;
+            ossHeight << std::fixed << std::setprecision(2) << (boundRect.height / PxToMM);
+            cv::putText(roi, ossHeight.str(), cv::Point(std::min(frame.cols - 75, boundRect.x + boundRect.width - 25), center.y), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
         }
     }
 
