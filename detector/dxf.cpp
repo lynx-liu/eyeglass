@@ -6,6 +6,7 @@
 ///////////////////////////////////////////////////
 
 #include "dxf.h"
+#include <codecvt>
 
 Dxf::Dxf()
 {
@@ -17,9 +18,16 @@ Dxf::~Dxf()
 
 }
 
-bool Dxf::SaveContoursToFile(std::vector<std::vector<cv::Point2f>> contours, std::string filename) {
+bool Dxf::SaveContoursToFile(std::vector<std::vector<cv::Point2f>> contours, std::string utf8Path) {
+#ifdef _WIN32
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+    std::wstring widePath = converter.from_bytes(utf8Path);
+
     // 打开DXF文件
-    std::ofstream dxfFile(filename);
+    std::ofstream dxfFile(widePath);
+#else
+    std::ofstream dxfFile(utf8Path);
+#endif // _WIN32
     if (!dxfFile.is_open()) {
         std::cerr << "Could not open the DXF file" << std::endl;
         return false;

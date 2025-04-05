@@ -7,6 +7,9 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tinyfiledialogs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -16,6 +19,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cvui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tinyfiledialogs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

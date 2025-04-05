@@ -3,6 +3,7 @@
 
 #define CVUI_IMPLEMENTATION
 #include "cvui.h"
+#include "tinyfiledialogs.h"
 
 #define CV_EDIT_VIEW	"EyeGlass"
 const double PX_TO_MM = 25.4; //1cm = 254px
@@ -103,7 +104,16 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
         }
 
         if (cvui::button(background, settingX + padding, settingY + settingHeight - margin + padding, "   Save   ")) {
-            if (!detector->saveToDxf(std::to_string(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count()) + ".dxf")) {
+            const char* filters[] = { "*.dxf" };
+            const char* filename = tinyfd_saveFileDialog(
+                "Save As",
+                (std::to_string(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count()) + ".dxf").c_str(),
+                1,
+                filters,
+                "AutoCAD files (*.dxf)"
+            );
+
+            if (filename && !detector->saveToDxf(filename)) {
                 STARTUPINFO si;
                 ZeroMemory(&si, sizeof(si));
                 si.cb = sizeof(si);
