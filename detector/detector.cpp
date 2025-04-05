@@ -212,7 +212,7 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
 }
 
 cv::Mat Detector::rotate(cv::Mat frame, int angle) {
-    rotationCenter = cv::Point2f(frame.cols / 2.0f, frame.rows / 2.0f);//旋转中心
+    if (scale == 1.0) rotationCenter = mousePoint;// 以缩放开始时的鼠标位置为缩放中心
     cv::Mat rotateMat = getRotationMatrix2D(rotationCenter, angle, scale);
     warpAffine(frame, frame, rotateMat, frame.size());
     return frame;
