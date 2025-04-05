@@ -39,6 +39,7 @@ void Detector::reset(cv::Rect rect, double pxToMm)
     isEditSelectArea = false;
     selectRect = cv::Rect(0, 0, 0, 0);
     scale = 1.0;
+    rotationCenter = cv::Point(editArea.size() / 2);
 
     currentContour.clear();
     eyeglassContours.clear();
@@ -212,7 +213,11 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
 }
 
 cv::Mat Detector::rotate(cv::Mat frame, int angle) {
-    if (scale == 1.0) rotationCenter = mousePoint;// 以缩放开始时的鼠标位置为缩放中心
+    if (angle == 0 && scale == 1.0) {
+        rotationCenter = cv::Point(frame.size() / 2);
+        return frame;
+    }
+
     cv::Mat rotateMat = getRotationMatrix2D(rotationCenter, angle, scale);
     warpAffine(frame, frame, rotateMat, frame.size());
     return frame;
@@ -323,9 +328,15 @@ bool Detector::onMouse(int event, int x, int y, int flags) {
     case cv::EVENT_MOUSEWHEEL: {
         int N = flags < 0 ? 8 : -8;
         double scaleN = computeScale(currentContour, N);
-        currentContour = scaleContour(currentContour, scaleN, rotationCenter);
-        scale *= scaleN;//相对原始图的累积缩放因子
-        return true;
+        if (scaleN > 0) {
+            if (scale == 1.0 && rotationCenter.x==editArea.width/2 && rotationCenter.y==editArea.height/2) {
+                rotationCenter = mousePoint;// 以缩放开始时的鼠标位置为缩放中心
+            }
+
+            currentContour = scaleContour(currentContour, scaleN, rotationCenter);
+            scale *= scaleN;//相对原始图的累积缩放因子
+            return true;
+        }
     }
         break;
 

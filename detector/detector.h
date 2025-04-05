@@ -45,7 +45,6 @@ private:
     cv::Rect boundRect;
 
     double PxToMM;
-    int angle;
     double scale;
     cv::Point2f rotationCenter;
     std::vector<cv::Point2f> currentContour;
