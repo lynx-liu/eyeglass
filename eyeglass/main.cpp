@@ -35,8 +35,8 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
     int clipLimitValue = -1, medianBlurKSize = -1, morphKSize = -1;
     int clipLimitTrack = 0, medianBlurTrack = 0, morphKTrack = 7;
 
-    int margin = 50, padding = 15, settingWidth = 240, settingHeight = 420;
-    int settingX = background.cols - settingWidth - margin, settingY = background.rows - settingHeight - margin;
+    int margin = 50, padding = 15, settingWidth = 130, settingHeight = 420;
+    int settingX = background.cols - settingWidth - padding, settingY = background.rows - settingHeight - margin;
     settingsRect = { settingX, settingY, settingWidth, settingHeight };
     detector->reset({ 0, 0, frame.cols, frame.rows }, pxToMm);
 
@@ -85,24 +85,24 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             }
         }
 
-        if (cvui::button(background, settingX + padding + margin * 2, settingY + (margin + padding) * 4 + padding, "S+")) {
+        if (cvui::button(background, settingX + padding, settingY + (margin + padding) * 4 + padding * 3, "S+")) {
             detector->scaleCurrentContour(+1);
             isEdit = true;
         }
 
-        if (cvui::button(background, settingX + padding + margin * 3, settingY + (margin + padding) * 4 + padding, "S-")) {
+        if (cvui::button(background, settingX + padding + margin, settingY + (margin + padding) * 4 + padding * 3, "S-")) {
             detector->scaleCurrentContour(-1);
             isEdit = true;
         }
 
-        if (cvui::button(background, settingX + settingWidth - margin * 4, settingY + settingHeight - (margin + padding), "FindNext")) {
+        if (cvui::button(background, settingX + padding, settingY + settingHeight - margin - padding, " FindNext ")) {
             if (detector->findNext()) {
                 refresh = true;
                 isEdit = true;
             }
         }
 
-        if (cvui::button(background, settingX + settingWidth - margin * 2, settingY + settingHeight - (margin + padding), "Save")) {
+        if (cvui::button(background, settingX + padding, settingY + settingHeight - margin + padding, "   Save   ")) {
             if (!detector->saveToDxf(std::to_string(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count()) + ".dxf")) {
                 STARTUPINFO si;
                 ZeroMemory(&si, sizeof(si));
