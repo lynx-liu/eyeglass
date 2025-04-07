@@ -6,7 +6,7 @@
 #include "tinyfiledialogs.h"
 
 #define CV_EDIT_VIEW	"EyeGlass"
-const double PX_TO_MM = 25.4; //1cm = 254px
+const double PX_TO_MM = 25.6; //1cm = 256px
 
 bool isEdit = false;
 cv::Rect settingsRect = {};
