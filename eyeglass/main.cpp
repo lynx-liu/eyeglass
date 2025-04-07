@@ -31,7 +31,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
 {
     Detector* detector = static_cast<Detector*>(userdata);
 
-    int angle = 0;
+    double angle = 0.0;
     bool refresh = false;
     int clipLimitValue = -1, medianBlurKSize = -1, morphKSize = -1;
     int clipLimitTrack = 0, medianBlurTrack = 0, morphKTrack = 7;
@@ -74,7 +74,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             if (detector->onKey('R')) {
                 isEdit = true;
                 refresh = true;
-                angle++;
+                angle+=0.05;
             }
         }
 
@@ -82,7 +82,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             if (detector->onKey('R')) {
                 isEdit = true;
                 refresh = true;
-                angle--;
+                angle-=0.05;
             }
         }
 
@@ -161,8 +161,8 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
                 cv::Rect editArea = detector->getEditArea();
                 cv::Point mousePoint = detector->getMousePoint();
                 if (mousePoint.x <= editArea.x + editArea.width / 2)
-                    angle++;
-                else angle--;
+                    angle+=0.05;
+                else angle-=0.05;
                 refresh = true;
             }
             break;

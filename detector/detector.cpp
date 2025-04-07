@@ -212,9 +212,9 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
     cv::putText(roi, fps_.toString(), cv::Point(0, frame.rows - 3), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 128, 255));
 }
 
-cv::Mat Detector::rotate(cv::Mat frame, int angle) {
-    if (angle == 0 && scale == 1.0) {
-        rotationCenter = cv::Point(frame.size() / 2);
+cv::Mat Detector::rotate(cv::Mat frame, double angle) {
+    if (angle == 0.0 && scale == 1.0) {
+        rotationCenter = cv::Point2f(frame.size() / 2);
         return frame;
     }
 

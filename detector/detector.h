@@ -23,7 +23,7 @@ public:
     ~Detector();
     void detect(cv::Mat frame, double clipLimit, int medianBlurKSize, int morphKSize, cv::Mat background);
     void drawFrame(cv::Mat frame, cv::Mat background, bool mark = false);
-    cv::Mat rotate(cv::Mat frame, int angle);
+    cv::Mat rotate(cv::Mat frame, double angle);
     bool findNext();
     void scaleCurrentContour(int N);
     bool saveToDxf(std::string filename);
