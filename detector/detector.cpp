@@ -39,7 +39,7 @@ void Detector::reset(cv::Rect rect, double pxToMm)
     isEditSelectArea = false;
     selectRect = cv::Rect(0, 0, 0, 0);
     scale = 1.0;
-    rotationCenter = cv::Point(editArea.size() / 2);
+    rotationCenter = cv::Point2f(editArea.size() / 2);
 
     currentContour.clear();
     eyeglassContours.clear();
@@ -326,7 +326,7 @@ bool Detector::onMouse(int event, int x, int y, int flags) {
         break;
 
     case cv::EVENT_MOUSEWHEEL: {
-        int N = flags < 0 ? 8 : -8;
+        int N = flags < 0 ? 24 : -24;
         double scaleN = computeScale(currentContour, N);
         if (scaleN > 0) {
             if (scale == 1.0 && rotationCenter.x==editArea.width/2 && rotationCenter.y==editArea.height/2) {
