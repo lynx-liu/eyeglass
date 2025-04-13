@@ -13,6 +13,17 @@ inline double distance(const cv::Point2f& pt1, const cv::Point2f& pt2) {
     return std::sqrt(std::pow(pt2.x - pt1.x, 2) + std::pow(pt2.y - pt1.y, 2));
 }
 
+Axis getAxis(const cv::Point2f& center, const cv::Point2f& mouse) {
+    cv::Point2f delta = mouse - center;
+
+    if (std::abs(delta.x) > std::abs(delta.y)) {
+        return delta.x > 0 ? Axis::X_Positive : Axis::X_Negative;
+    }
+    else {
+        return delta.y > 0 ? Axis::Y_Positive : Axis::Y_Negative;
+    }
+}
+
 // 函数定义：将 std::vector<cv::Point> 转换为 std::vector<cv::Point2f>
 std::vector<cv::Point2f> convertToPoint2f(const std::vector<cv::Point>& contour) {
     std::vector<cv::Point2f> result;
@@ -100,6 +111,53 @@ std::vector<cv::Point2f> scaleContour(const std::vector<cv::Point2f>& contour, d
     }
 
     return scaledContour;
+}
+
+std::vector<cv::Point2f> scaleContour(const std::vector<cv::Point2f>& contour, double scale, const cv::Point2f& center, Axis direction)
+{
+    std::vector<cv::Point2f> result;
+    result.reserve(contour.size());
+
+    if (scale <= 0.0) {
+        return contour;
+    }
+
+    for (const auto& pt : contour) {
+        cv::Point2f newPt = pt;
+
+        switch (direction) {
+        case Axis::X_Positive:
+            if (pt.x > center.x) {
+                newPt.x = (float)(center.x + (pt.x - center.x) * scale);
+            }
+            break;
+
+        case Axis::X_Negative:
+            if (pt.x < center.x) {
+                newPt.x = (float)(center.x + (pt.x - center.x) * scale);
+            }
+            break;
+
+        case Axis::Y_Positive:
+            if (pt.y > center.y) {
+                newPt.y = (float)(center.y + (pt.y - center.y) * scale);
+            }
+            break;
+
+        case Axis::Y_Negative:
+            if (pt.y < center.y) {
+                newPt.y = (float)(center.y + (pt.y - center.y) * scale);
+            }
+            break;
+
+        default:
+            break;
+        }
+
+        result.push_back(newPt);
+    }
+
+    return result;
 }
 
 int findMaxContourId(const std::vector<std::vector<cv::Point> >& contours)

@@ -290,7 +290,7 @@ bool Detector::onKey(int key) {
     return false;
 }
 
-bool Detector::onMouse(int event, int x, int y, int flags) {
+bool Detector::onMouse(int event, int x, int y, int flags, bool isChecked) {
     switch (event)
     {
     case cv::EVENT_LBUTTONDOWN:
@@ -329,16 +329,26 @@ bool Detector::onMouse(int event, int x, int y, int flags) {
         break;
 
     case cv::EVENT_MOUSEWHEEL: {
-        int N = flags < 0 ? 24 : -24;
-        double scaleN = computeScale(currentContour, N);
-        if (scaleN > 0) {
-            if (std::abs(scale - 1.0)< epsilon && rotationCenter.x==editArea.width/2 && rotationCenter.y==editArea.height/2) {
-                rotationCenter = mousePoint;// 以缩放开始时的鼠标位置为缩放中心
+        if (isChecked) {//only scale contour
+            int N = flags < 0 ? 1 : -1;
+            double scaleN = computeScale(currentContour, N);
+            if (scaleN > 0) {
+                cv::Point2f center = computeContourCenter(currentContour);
+                currentContour = scaleContour(currentContour, scaleN, center, getAxis(center, mousePoint));
             }
+        }
+        else {
+            int N = flags < 0 ? 24 : -24;
+            double scaleN = computeScale(currentContour, N);
+            if (scaleN > 0) {
+                if (std::abs(scale - 1.0) < epsilon && rotationCenter.x == editArea.width / 2 && rotationCenter.y == editArea.height / 2) {
+                    rotationCenter = mousePoint;// 以缩放开始时的鼠标位置为缩放中心
+                }
 
-            currentContour = scaleContour(currentContour, scaleN, rotationCenter);
-            scale *= scaleN;//相对原始图的累积缩放因子
-            return true;
+                currentContour = scaleContour(currentContour, scaleN, rotationCenter);
+                scale *= scaleN;//相对原始图的累积缩放因子
+                return true;
+            }
         }
     }
         break;

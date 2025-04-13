@@ -9,7 +9,9 @@
 const double PX_TO_MM = 25.6; //1cm = 256px
 
 bool isEdit = false;
+bool onlyContour = false;
 cv::Rect settingsRect = {};
+
 void mouseCallback(int event, int x, int y, int flags, void* userdata) {
     Detector* detector = static_cast<Detector*>(userdata);
     cv::Point point = cv::Point(x, y);
@@ -21,7 +23,7 @@ void mouseCallback(int event, int x, int y, int flags, void* userdata) {
     else {
         cv::Rect editArea = detector->getEditArea();
         if (editArea.contains(point)) {
-            if(detector->onMouse(event, x, y, flags))
+            if(detector->onMouse(event, x, y, flags, onlyContour))
                 isEdit = true;
         }
     }
@@ -36,7 +38,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
     int clipLimitValue = -1, medianBlurKSize = -1, morphKSize = -1;
     int clipLimitTrack = 0, medianBlurTrack = 0, morphKTrack = 7;
 
-    int margin = 50, padding = 15, settingWidth = 130, settingHeight = 420;
+    int margin = 50, padding = 15, settingWidth = 130, settingHeight = 450;
     int settingX = background.cols - settingWidth - padding, settingY = background.rows - settingHeight - margin;
     settingsRect = { settingX, settingY, settingWidth, settingHeight };
     detector->reset({ 0, 0, frame.cols, frame.rows }, pxToMm);
@@ -95,6 +97,8 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             detector->scaleCurrentContour(-1);
             isEdit = true;
         }
+
+        cvui::checkbox(background, settingX + padding, settingY + (margin + padding) * 4 + padding * 5, "OnlyContour", &onlyContour);
 
         if (cvui::button(background, settingX + padding, settingY + settingHeight - margin - padding, " FindNext ")) {
             if (detector->findNext()) {

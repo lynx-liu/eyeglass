@@ -28,7 +28,7 @@ public:
     bool scaleCurrentContour(int N);
     bool saveToDxf(std::string filename);
     bool onKey(int key);
-    bool onMouse(int event, int x, int y, int flags);
+    bool onMouse(int event, int x, int y, int flags, bool isChecked = false);
     cv::Point getMousePoint();
     cv::Rect getEditArea();
     void reset(cv::Rect rect = {}, double pxToMm = 1.0);

@@ -10,7 +10,15 @@
 
 #include <opencv2/opencv.hpp>
 
+enum class Axis {
+    X_Positive,
+    X_Negative,
+    Y_Positive,
+    Y_Negative
+};
+
 inline double distance(const cv::Point2f& pt1, const cv::Point2f& pt2);
+Axis getAxis(const cv::Point2f& center, const cv::Point2f& mouse);
 
 std::vector<cv::Point2f> convertToPoint2f(const std::vector<cv::Point>& contour);
 std::vector<cv::Point> convertToPoint(const std::vector<cv::Point2f>& contour);
@@ -19,6 +27,8 @@ double computeAverageRadius(const std::vector<cv::Point2f>& contour);
 double computeScale(const std::vector<cv::Point2f>& contour, int N);
 std::vector<cv::Point2f> scaleContour(const std::vector<cv::Point2f>& contour, int N, cv::Point2f center);
 std::vector<cv::Point2f> scaleContour(const std::vector<cv::Point2f>& contour, double scale, cv::Point2f center);
+std::vector<cv::Point2f> scaleContour(const std::vector<cv::Point2f>& contour, double scale, const cv::Point2f& center, Axis direction);
+
 int findMaxContourId(const std::vector<std::vector<cv::Point> >& contours);
 std::vector<cv::Point2f> findCornerPoints(const std::vector<cv::Point2f>& contour, double angleThreshold = 3.0);
 void drawContour(cv::Mat background, const std::vector<cv::Point2f>& contour, cv::Scalar scalar = cv::Scalar(255, 0, 0), bool markPoint = false);
