@@ -20,6 +20,7 @@
 
 Register m_register;
 FPS fps_ = FPS();
+const double epsilon = 1e-6;
 
 Detector::Detector()
 {
@@ -213,7 +214,7 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
 }
 
 cv::Mat Detector::rotate(cv::Mat frame, double angle) {
-    if (angle == 0.0 && scale == 1.0) {
+    if (std::abs(angle)< epsilon && std::abs(scale - 1.0)< epsilon) {
         rotationCenter = cv::Point2f(frame.size() / 2);
         return frame;
     }
@@ -224,7 +225,7 @@ cv::Mat Detector::rotate(cv::Mat frame, double angle) {
 }
 
 bool Detector::findNext() {
-    if (!currentContour.empty() && scale==1.0) {
+    if (!currentContour.empty() && std::abs(scale - 1.0)< epsilon) {
         eyeglassContours.emplace_back(currentContour);
         currentContour.clear();
         return true;
@@ -232,8 +233,10 @@ bool Detector::findNext() {
     return false;
 }
 
-void Detector::scaleCurrentContour(int N) {
-    currentContour = scaleContour(currentContour, -N, rotationCenter);
+bool Detector::scaleCurrentContour(int N) {
+    if (std::abs(scale - 1.0) >= epsilon) return false;
+    currentContour = scaleContour(currentContour, -N, computeContourCenter(currentContour));
+    return true;
 }
 
 bool Detector::saveToDxf(std::string filename) {
@@ -329,7 +332,7 @@ bool Detector::onMouse(int event, int x, int y, int flags) {
         int N = flags < 0 ? 24 : -24;
         double scaleN = computeScale(currentContour, N);
         if (scaleN > 0) {
-            if (scale == 1.0 && rotationCenter.x==editArea.width/2 && rotationCenter.y==editArea.height/2) {
+            if (std::abs(scale - 1.0)< epsilon && rotationCenter.x==editArea.width/2 && rotationCenter.y==editArea.height/2) {
                 rotationCenter = mousePoint;// 以缩放开始时的鼠标位置为缩放中心
             }
 
