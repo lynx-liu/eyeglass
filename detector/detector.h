@@ -26,9 +26,10 @@ public:
     cv::Mat rotate(cv::Mat frame, double angle);
     bool findNext();
     bool scaleCurrentContour(int N);
+    void setOnlyContour(bool state);
     bool saveToDxf(std::string filename);
     bool onKey(int key);
-    bool onMouse(int event, int x, int y, int flags, bool isChecked = false);
+    bool onMouse(int event, int x, int y, int flags);
     cv::Point getMousePoint();
     cv::Rect getEditArea();
     void reset(cv::Rect rect = {}, double pxToMm = 1.0);
@@ -46,6 +47,7 @@ private:
 
     double PxToMM;
     double scale;
+    bool onlyContour;
     cv::Point2f rotationCenter;
     std::vector<cv::Point2f> currentContour;
     std::vector<std::vector<cv::Point2f>> eyeglassContours;

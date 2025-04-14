@@ -36,6 +36,7 @@ void Detector::reset(cv::Rect rect, double pxToMm)
 {
     editArea = rect;
     PxToMM = pxToMm;
+    onlyContour = false;
 
     isEditSelectArea = false;
     selectRect = cv::Rect(0, 0, 0, 0);
@@ -177,6 +178,8 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
     fps_.tic();
 
     cv::Mat roi = background(cv::Rect(0, 0, frame.cols, frame.rows));
+    if (onlyContour) frame.setTo(cv::Scalar(0));//缩放轮廓模式不显示图像
+
     if (frame.channels() > 1) {
         frame.copyTo(roi);
     }
@@ -236,7 +239,12 @@ bool Detector::findNext() {
 bool Detector::scaleCurrentContour(int N) {
     if (std::abs(scale - 1.0) >= epsilon) return false;
     currentContour = scaleContour(currentContour, -N, computeContourCenter(currentContour));
+    boundRect = boundingRect(currentContour);
     return true;
+}
+
+void Detector::setOnlyContour(bool state) {
+    onlyContour = state;
 }
 
 bool Detector::saveToDxf(std::string filename) {
@@ -290,7 +298,7 @@ bool Detector::onKey(int key) {
     return false;
 }
 
-bool Detector::onMouse(int event, int x, int y, int flags, bool isChecked) {
+bool Detector::onMouse(int event, int x, int y, int flags) {
     switch (event)
     {
     case cv::EVENT_LBUTTONDOWN:
@@ -329,12 +337,13 @@ bool Detector::onMouse(int event, int x, int y, int flags, bool isChecked) {
         break;
 
     case cv::EVENT_MOUSEWHEEL: {
-        if (isChecked) {//only scale contour
+        if (onlyContour) {//only scale contour
             int N = flags < 0 ? 1 : -1;
             double scaleN = computeScale(currentContour, N);
             if (scaleN > 0) {
                 cv::Point2f center = computeContourCenter(currentContour);
                 currentContour = scaleContour(currentContour, scaleN, center, getAxis(center, mousePoint));
+                boundRect = boundingRect(currentContour);
             }
         }
         else {

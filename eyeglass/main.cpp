@@ -10,6 +10,7 @@ const double PX_TO_MM = 25.6; //1cm = 256px
 
 bool isEdit = false;
 bool onlyContour = false;
+bool preOnlyContour = onlyContour;
 cv::Rect settingsRect = {};
 
 void mouseCallback(int event, int x, int y, int flags, void* userdata) {
@@ -23,7 +24,7 @@ void mouseCallback(int event, int x, int y, int flags, void* userdata) {
     else {
         cv::Rect editArea = detector->getEditArea();
         if (editArea.contains(point)) {
-            if(detector->onMouse(event, x, y, flags, onlyContour))
+            if(detector->onMouse(event, x, y, flags))
                 isEdit = true;
         }
     }
@@ -99,6 +100,11 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
         }
 
         cvui::checkbox(background, settingX + padding, settingY + (margin + padding) * 4 + padding * 5, "OnlyContour", &onlyContour);
+        if (preOnlyContour != onlyContour) {
+            preOnlyContour = onlyContour;
+            detector->setOnlyContour(onlyContour);
+            isEdit = true;
+        }
 
         if (cvui::button(background, settingX + padding, settingY + settingHeight - margin - padding, " FindNext ")) {
             if (detector->findNext()) {
