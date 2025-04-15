@@ -252,7 +252,7 @@ bool Detector::saveToDxf(std::string filename) {
 
     std::vector<std::vector<cv::Point2f>> contours = eyeglassContours;
     contours.emplace_back(currentContour);
-    Dxf::SaveContoursToFile(contours, filename);
+    Dxf::SaveContoursToFile(contours, filename, 1.0/PxToMM);
     return true;
 }
 

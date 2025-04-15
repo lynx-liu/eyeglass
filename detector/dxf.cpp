@@ -18,7 +18,7 @@ Dxf::~Dxf()
 
 }
 
-bool Dxf::SaveContoursToFile(std::vector<std::vector<cv::Point2f>> contours, std::string utf8Path) {
+bool Dxf::SaveContoursToFile(std::vector<std::vector<cv::Point2f>> contours, std::string utf8Path, double pixelToMm) {
 #ifdef _WIN32
     std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
     std::wstring widePath = converter.from_bytes(utf8Path);
@@ -34,11 +34,11 @@ bool Dxf::SaveContoursToFile(std::vector<std::vector<cv::Point2f>> contours, std
     }
 
     // 写入DXF文件头
-    dxfFile << "  0\nSECTION\n  2\nHEADER\n  0\nENDSEC\n  0\nSECTION\n  2\nENTITIES\n";
+    dxfFile << "  0\nSECTION\n  2\nHEADER\n  9\n$INSUNITS\n  70\n4\n  0\nENDSEC\n  0\nSECTION\n  2\nENTITIES\n";
 
     // 写入轮廓
     for (const auto& contour : contours) {
-        WriteContourToDxf(dxfFile, contour);
+        WriteContourToDxf(dxfFile, contour, pixelToMm);
     }
 
     // 写入DXF文件尾
@@ -49,7 +49,7 @@ bool Dxf::SaveContoursToFile(std::vector<std::vector<cv::Point2f>> contours, std
     return true;
 }
 
-void Dxf::WriteContourToDxf(std::ofstream& dxfFile, const std::vector<cv::Point2f>& contour) {
+void Dxf::WriteContourToDxf(std::ofstream& dxfFile, const std::vector<cv::Point2f>& contour, double pixelToMm) {
     dxfFile << "  0\n";
     dxfFile << "POLYLINE\n";
     dxfFile << "  8\n";
@@ -69,9 +69,9 @@ void Dxf::WriteContourToDxf(std::ofstream& dxfFile, const std::vector<cv::Point2
         dxfFile << "  8\n";
         dxfFile << "Contour\n";
         dxfFile << " 10\n";
-        dxfFile << pt.x << "\n";
+        dxfFile << pt.x * pixelToMm << "\n";
         dxfFile << " 20\n";
-        dxfFile << -pt.y << "\n";
+        dxfFile << -pt.y * pixelToMm << "\n";
         dxfFile << " 30\n";
         dxfFile << "0.0\n";
     }

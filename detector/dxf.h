@@ -23,10 +23,10 @@ class Dxf {
 public:
     Dxf();
     ~Dxf();
-    static bool SaveContoursToFile(std::vector<std::vector<cv::Point2f>> contours, std::string utf8Path);
+    static bool SaveContoursToFile(std::vector<std::vector<cv::Point2f>> contours, std::string utf8Path, double pixelToMm = 1.0);
 
 private:
-    static void WriteContourToDxf(std::ofstream& dxfFile, const std::vector<cv::Point2f>& contour);
+    static void WriteContourToDxf(std::ofstream& dxfFile, const std::vector<cv::Point2f>& contour, double pixelToMm = 1.0);
 };
 
 #endif // DXF_H
