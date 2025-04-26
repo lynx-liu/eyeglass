@@ -161,6 +161,10 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
         case KEY_RETURN:
         case KEY_SPACE:
             isEdit = !isEdit;
+            if (!isEdit && onlyContour) {
+                onlyContour = false;
+                preOnlyContour = onlyContour;
+            }
             break;
 
         case 'r':
