@@ -152,6 +152,7 @@ void Detector::detect(cv::Mat frame, double clipLimit, int medianBlurKSize, int 
             currentContour = findContourInRect(frame, clipLimit, medianBlurKSize, morphKSize, background, selectRect);
         }
         boundRect = boundingRect(currentContour);
+        pupilCenter = cv::Point(boundRect.x + (boundRect.width >> 1), boundRect.y + (boundRect.height >> 1));
     }
     else {
         drawContours(frame, eyeglassContours, cv::Scalar(0, 255, 0));
@@ -202,6 +203,10 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
             std::ostringstream ossHeight;
             ossHeight << std::fixed << std::setprecision(2) << (boundRect.height / PxToMM);
             cv::putText(roi, ossHeight.str(), cv::Point(std::min(frame.cols - 75, boundRect.x + boundRect.width - 25), center.y), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(255, 128, 0));
+
+            int offset = 50;
+            cv::line(roi, cv::Point(pupilCenter.x-offset, pupilCenter.y), cv::Point(pupilCenter.x+offset, pupilCenter.y), cv::Scalar(0, 255, 255), 1);
+            cv::line(roi, cv::Point(pupilCenter.x, pupilCenter.y-offset), cv::Point(pupilCenter.x, pupilCenter.y+offset), cv::Scalar(0, 255, 255), 1);
         }
     }
 
@@ -379,4 +384,20 @@ cv::Point Detector::getMousePoint() {
 
 cv::Rect Detector::getEditArea() {
     return editArea;
+}
+
+double Detector::getPupilWidth() {
+    return (boundRect.x + boundRect.width - pupilCenter.x) / PxToMM;
+}
+
+double Detector::getPupilHeight() {
+    return (boundRect.y + boundRect.height - pupilCenter.y) / PxToMM;
+}
+
+void Detector::setPupilWidth(double pupilWidth) {
+    pupilCenter.x = boundRect.x + boundRect.width - (int)(pupilWidth * PxToMM);
+}
+
+void Detector::setPupilHeight(double pupilHeight) {
+    pupilCenter.y = boundRect.y + boundRect.height - (int)(pupilHeight * PxToMM);
 }
