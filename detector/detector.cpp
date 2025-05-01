@@ -342,6 +342,7 @@ bool Detector::onMouse(int event, int x, int y, int flags) {
         break;
 
     case cv::EVENT_MOUSEWHEEL: {
+        mousePoint = cv::Point(x, y);
         if (onlyContour) {//only scale contour
             int N = flags < 0 ? 1 : -1;
             double scaleN = computeScale(currentContour, N);

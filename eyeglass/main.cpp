@@ -39,7 +39,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
     int clipLimitValue = -1, medianBlurKSize = -1, morphKSize = -1;
     int clipLimitTrack = 0, medianBlurTrack = 0, morphKTrack = 7;
 
-    int margin = 50, padding = 15, settingWidth = 130, settingHeight = 520;
+    int margin = 50, padding = 15, settingWidth = 130, settingHeight = 420;
     int settingX = background.cols - settingWidth - padding, settingY = background.rows - settingHeight - margin;
     settingsRect = { settingX, settingY, settingWidth, settingHeight };
     detector->reset({ 0, 0, frame.cols, frame.rows }, pxToMm);
@@ -61,29 +61,70 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
 
         cvui::window(background, settingX, settingY, settingWidth, settingHeight, "Setting");
 
-        cvui::text(background, settingX + padding, settingY + margin, "Edge Curl");
-        if(cvui::trackbar(background, settingX + padding * 2, settingY + margin + padding, settingWidth - padding * 3, &medianBlurTrack, 0, 9, 0, "%.0Lf"))
-            isEdit = true;
+        if (onlyContour) {
+            if (cvui::button(background, settingX + padding, settingY + margin, "+")) {
+                cv::Rect editArea = detector->getEditArea();
+                detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x, editArea.y + editArea.height / 2, +1);
+            }
+            cvui::text(background, settingX + padding, settingY + margin + padding, "L");
+            if (cvui::button(background, settingX + padding + margin, settingY + margin, "-")) {
+                cv::Rect editArea = detector->getEditArea();
+                detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x, editArea.y + editArea.height / 2, -1);
+            }
 
-        cvui::text(background, settingX + padding, settingY + (margin + padding) * 2, "Morph Kernel");
-        if(cvui::trackbar(background, settingX + padding * 2, settingY + (margin + padding) * 2 + padding, settingWidth - padding * 3, &morphKTrack, 0, 9, 1, "%.0Lf"))
-            isEdit = true;
+            if (cvui::button(background, settingX + padding, settingY + margin + padding * 2, "+")) {
+                cv::Rect editArea = detector->getEditArea();
+                detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width, editArea.y + editArea.height / 2, +1);
+            }
+            cvui::text(background, settingX + padding, settingY + margin + padding * 3, "R");
+            if (cvui::button(background, settingX + padding + margin, settingY + margin + padding * 2, "-")) {
+                cv::Rect editArea = detector->getEditArea();
+                detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width, editArea.y + editArea.height / 2, -1);
+            }
 
-        cvui::text(background, settingX + padding, settingY + (margin + padding) * 3, "clipLimit");
-        if (cvui::trackbar(background, settingX + padding * 2, settingY + (margin + padding) * 3 + padding, settingWidth - padding * 3, &clipLimitTrack, 0, 9, 1, "%.0Lf"))
-            isEdit = true;
+            if (cvui::button(background, settingX + padding, settingY + margin + padding * 4, "+")) {
+                cv::Rect editArea = detector->getEditArea();
+                detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width / 2, editArea.y, +1);
+            }
+            cvui::text(background, settingX + padding, settingY + margin + padding * 5, "T");
+            if (cvui::button(background, settingX + padding + margin, settingY + margin + padding * 4, "-")) {
+                cv::Rect editArea = detector->getEditArea();
+                detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width / 2, editArea.y, -1);
+            }
 
-        if (isEdit) {
+            if (cvui::button(background, settingX + padding, settingY + margin + padding * 6, "+")) {
+                cv::Rect editArea = detector->getEditArea();
+                detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width / 2, editArea.y + editArea.height, +1);
+            }
+            cvui::text(background, settingX + padding, settingY + margin + padding * 7, "B");
+            if (cvui::button(background, settingX + padding + margin, settingY + margin + padding * 6, "-")) {
+                cv::Rect editArea = detector->getEditArea();
+                detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width / 2, editArea.y + editArea.height, -1);
+            }
+
             double pupilHeight = detector->getPupilHeight(), pupilWidth = detector->getPupilWidth();
             double lastPupiHeight = pupilHeight, lastPupiWidth = pupilWidth;
-            cvui::counter(background, settingX + padding, settingY + (margin + padding) * 4 + padding, &pupilWidth, 0.1, "W:%.1f");
+            cvui::counter(background, settingX + padding, settingY + margin + padding * 9, &pupilWidth, 0.1, "W:%.1f");
             if (lastPupiWidth != pupilWidth) detector->setPupilWidth(pupilWidth);
 
-            cvui::counter(background, settingX + padding, settingY + (margin + padding) * 4 + padding * 3, &pupilHeight, 0.1, "H:%.1f");
+            cvui::counter(background, settingX + padding, settingY + margin + padding * 11, &pupilHeight, 0.1, "H:%.1f");
             if (lastPupiHeight != pupilHeight) detector->setPupilHeight(pupilHeight);
         }
+        else {
+            cvui::text(background, settingX + padding, settingY + margin, "Edge Curl");
+            if (cvui::trackbar(background, settingX + padding * 2, settingY + margin + padding, settingWidth - padding * 3, &medianBlurTrack, 0, 9, 0, "%.0Lf"))
+                isEdit = true;
 
-        if (cvui::button(background, settingX + padding, settingY + (margin + padding) * 4 + padding * 5, "R-")) {
+            cvui::text(background, settingX + padding, settingY + (margin + padding) * 2, "Morph Kernel");
+            if (cvui::trackbar(background, settingX + padding * 2, settingY + (margin + padding) * 2 + padding, settingWidth - padding * 3, &morphKTrack, 0, 9, 1, "%.0Lf"))
+                isEdit = true;
+
+            cvui::text(background, settingX + padding, settingY + (margin + padding) * 3, "clipLimit");
+            if (cvui::trackbar(background, settingX + padding * 2, settingY + (margin + padding) * 3 + padding, settingWidth - padding * 3, &clipLimitTrack, 0, 9, 1, "%.0Lf"))
+                isEdit = true;
+        }
+
+        if (cvui::button(background, settingX + padding, settingY + margin + padding * 14, "R-")) {
             if (detector->onKey('R')) {
                 isEdit = true;
                 refresh = true;
@@ -91,7 +132,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             }
         }
 
-        if (cvui::button(background, settingX + padding + margin, settingY + (margin + padding) * 4 + padding * 5, "R+")) {
+        if (cvui::button(background, settingX + padding + margin, settingY + margin + padding * 14, "R+")) {
             if (detector->onKey('R')) {
                 isEdit = true;
                 refresh = true;
@@ -99,17 +140,17 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             }
         }
 
-        if (cvui::button(background, settingX + padding, settingY + (margin + padding) * 4 + padding * 7, "S+")) {
+        if (cvui::button(background, settingX + padding, settingY + margin + padding * 16, "S+")) {
             detector->scaleCurrentContour(+1);
             isEdit = true;
         }
 
-        if (cvui::button(background, settingX + padding + margin, settingY + (margin + padding) * 4 + padding * 7, "S-")) {
+        if (cvui::button(background, settingX + padding + margin, settingY + margin + padding * 16, "S-")) {
             detector->scaleCurrentContour(-1);
             isEdit = true;
         }
 
-        cvui::checkbox(background, settingX + padding, settingY + (margin + padding) * 4 + padding * 9, "OnlyContour", &onlyContour);
+        cvui::checkbox(background, settingX + padding, settingY + margin + padding * 18, "OnlyContour", &onlyContour);
         if (preOnlyContour != onlyContour) {
             preOnlyContour = onlyContour;
             detector->setOnlyContour(onlyContour);
