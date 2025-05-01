@@ -82,8 +82,10 @@ std::vector<cv::Point2f> Detector::findContourInRect(cv::Mat frame, double clipL
     cv::findContours(gray(roi), contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE, roi.tl());
 
     //把灰度图缩小后贴到背景右上角展示
-    cv::resize(gray, gray, cv::Size(cvRound(gray.cols / 2.0), cvRound(gray.rows / 2.0)), 0, 0, cv::INTER_LINEAR);
-    cv::cvtColor(gray, background(cv::Rect(background.cols - gray.cols, 0, gray.cols, gray.rows)), cv::COLOR_GRAY2BGR);
+    if (m_register.showQQ()) {
+        cv::resize(gray, gray, cv::Size(cvRound(gray.cols / 2.0), cvRound(gray.rows / 2.0)), 0, 0, cv::INTER_LINEAR);
+        cv::cvtColor(gray, background(cv::Rect(background.cols - gray.cols, 0, gray.cols, gray.rows)), cv::COLOR_GRAY2BGR);
+    }
 
     if (!contours.empty()) {
         int maxExternal = findMaxContourId(contours);
@@ -215,10 +217,12 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
 
     cv::rectangle(roi, selectRect, cv::Scalar(255, 0, 255), 2);
 
-    if (m_register.showQQ()) putText(roi, m_register.getMark(), cv::Point(frame.cols / 3, frame.rows / 2), cv::FONT_HERSHEY_COMPLEX, 1.2, cv::Scalar(0, 0, 255), 2);
+    if (m_register.showQQ()) {
+        putText(roi, m_register.getMark(), cv::Point(frame.cols / 3, frame.rows / 2), cv::FONT_HERSHEY_COMPLEX, 1.2, cv::Scalar(0, 0, 255), 2);
 
-    fps_.toc();
-    cv::putText(roi, fps_.toString(), cv::Point(0, frame.rows - 3), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 128, 255));
+        fps_.toc();
+        cv::putText(roi, fps_.toString(), cv::Point(0, frame.rows - 3), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 128, 255));
+    }
 }
 
 cv::Mat Detector::rotate(cv::Mat frame, double angle) {
