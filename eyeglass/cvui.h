@@ -355,7 +355,7 @@ void image(cv::Mat& theWhere, int theX, int theY, cv::Mat& theImage);
  \param theColor color of the label in the format `0xRRGGBB`, e.g. `0xff0000` for red.
  \return a boolean value that indicates the current state of the checkbox, `true` if it is checked.
 */
-bool checkbox(cv::Mat& theWhere, int theX, int theY, const cv::String& theLabel, bool *theState, unsigned int theColor = 0xCECECE);
+bool checkbox(cv::Mat& theWhere, int theX, int theY, const cv::String& theLabel, bool *theState, unsigned int theColor = 0xCECECE, int theHeight = 15);
 
 /**
  Display a piece of text.
@@ -421,7 +421,7 @@ void printf(cv::Mat& theWhere, int theX, int theY, const char *theFmt, ...);
  \param theFormat how the value of the counter should be presented, as it was printed by `stdio's printf()`. E.g. `"%d"` means the value will be displayed as an integer, `"%0d"` integer with one leading zero, etc.
  \return integer that corresponds to the current value of the counter.
 */
-int counter(cv::Mat& theWhere, int theX, int theY, int *theValue, int theStep = 1, const char *theFormat = "%d");
+int counter(cv::Mat& theWhere, int theX, int theY, int *theValue, int theStep = 1, const char *theFormat = "%d", int theWidth = 92, int theHeight = 22);
 
 /**
  Display a counter for float values that the user can increase/descrease
@@ -435,7 +435,7 @@ int counter(cv::Mat& theWhere, int theX, int theY, int *theValue, int theStep = 
  \param theFormat how the value of the counter should be presented, as it was printed by `stdio's printf()`. E.g. `"%f"` means the value will be displayed as a regular float, `"%.2f"` float with two digits after the point, etc.
  \return a float that corresponds to the current value of the counter.
 */
-double counter(cv::Mat& theWhere, int theX, int theY, double *theValue, double theStep = 0.5, const char *theFormat = "%.2f");
+double counter(cv::Mat& theWhere, int theX, int theY, double *theValue, double theStep = 0.5, const char *theFormat = "%.2f", int theWidth = 92, int theHeight = 22);
 
 /**
  Display a trackbar for numeric values that the user can increase/decrease
@@ -912,7 +912,7 @@ void printf(const char *theFmt, ...);
 \sa endRow()
 \sa endColumn()
 */
-int counter(int *theValue, int theStep = 1, const char *theFormat = "%d");
+int counter(int *theValue, int theStep = 1, const char *theFormat = "%d", int theWidth = 92, int theHeight = 22);
 
 /**
  Display a counter for float values that the user can increase/descrease
@@ -931,7 +931,7 @@ int counter(int *theValue, int theStep = 1, const char *theFormat = "%d");
  \sa endRow()
  \sa endColumn()
 */
-double counter(double *theValue, double theStep = 0.5, const char *theFormat = "%.2f");
+double counter(double *theValue, double theStep = 0.5, const char *theFormat = "%.2f", int theWidth = 92, int theHeight = 22);
 
 /**
  Display a trackbar for numeric values that the user can increase/decrease
@@ -1225,10 +1225,10 @@ namespace internal
 	bool button(cvui_block_t& theBlock, int theX, int theY, const cv::String& theLabel);
 	bool button(cvui_block_t& theBlock, int theX, int theY, cv::Mat& theIdle, cv::Mat& theOver, cv::Mat& theDown, bool theUpdateLayout);
 	void image(cvui_block_t& theBlock, int theX, int theY, cv::Mat& theImage);
-	bool checkbox(cvui_block_t& theBlock, int theX, int theY, const cv::String& theLabel, bool *theState, unsigned int theColor);
+	bool checkbox(cvui_block_t& theBlock, int theX, int theY, const cv::String& theLabel, bool *theState, unsigned int theColor, int theHeight = 15);
 	void text(cvui_block_t& theBlock, int theX, int theY, const cv::String& theText, double theFontScale, unsigned int theColor, bool theUpdateLayout);
-	int counter(cvui_block_t& theBlock, int theX, int theY, int *theValue, int theStep, const char *theFormat);
-	double counter(cvui_block_t& theBlock, int theX, int theY, double *theValue, double theStep, const char *theFormat);
+	int counter(cvui_block_t& theBlock, int theX, int theY, int *theValue, int theStep, const char *theFormat, int theWidth, int theHeight);
+	double counter(cvui_block_t& theBlock, int theX, int theY, double *theValue, double theStep, const char *theFormat, int theWidth, int theHeight);
 	void window(cvui_block_t& theBlock, int theX, int theY, int theWidth, int theHeight, const cv::String& theTitle);
 	void rect(cvui_block_t& theBlock, int theX, int theY, int theWidth, int theHeight, unsigned int theBorderColor, unsigned int theFillingColor);
 	void sparkline(cvui_block_t& theBlock, std::vector<double>& theValues, int theX, int theY, int theWidth, int theHeight, unsigned int theColor);
@@ -1710,9 +1710,9 @@ namespace internal
 		updateLayoutFlow(theBlock, aSize);
 	}
 
-	bool checkbox(cvui_block_t& theBlock, int theX, int theY, const cv::String& theLabel, bool *theState, unsigned int theColor) {
+	bool checkbox(cvui_block_t& theBlock, int theX, int theY, const cv::String& theLabel, bool *theState, unsigned int theColor, int theHeight) {
 		cvui_mouse_t& aMouse = internal::getContext().mouse;
-		cv::Rect aRect(theX, theY, 15, 15);
+		cv::Rect aRect(theX, theY, theHeight, theHeight);
 		cv::Size aTextSize = getTextSize(theLabel, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, nullptr);
 		cv::Rect aHitArea(theX, theY, aRect.width + aTextSize.width + 6, aRect.height);
 		bool aMouseIsOver = aHitArea.contains(aMouse.position);
@@ -1754,43 +1754,43 @@ namespace internal
 		}
 	}
 
-	int counter(cvui_block_t& theBlock, int theX, int theY, int *theValue, int theStep, const char *theFormat) {
-		cv::Rect aContentArea(theX + 22, theY, 48, 22);
+	int counter(cvui_block_t& theBlock, int theX, int theY, int *theValue, int theStep, const char *theFormat, int theWidth, int theHeight) {
+		cv::Rect aContentArea(theX + theHeight, theY, theWidth - theHeight * 2, theHeight);
 
-		if (internal::button(theBlock, theX, theY, 22, 22, "-", false)) {
+		if (internal::button(theBlock, theX, theY, theHeight, theHeight, "-", false)) {
 			*theValue -= theStep;
 		}
 
 		sprintf_s(internal::gBuffer, theFormat, *theValue);
 		render::counter(theBlock, aContentArea, internal::gBuffer);
 
-		if (internal::button(theBlock, aContentArea.x + aContentArea.width, theY, 22, 22, "+", false)) {
+		if (internal::button(theBlock, aContentArea.x + aContentArea.width, theY, theHeight, theHeight, "+", false)) {
 			*theValue += theStep;
 		}
 
 		// Update the layout flow
-		cv::Size aSize(22 * 2 + aContentArea.width, aContentArea.height);
+		cv::Size aSize(theHeight * 2 + aContentArea.width, aContentArea.height);
 		updateLayoutFlow(theBlock, aSize);
 
 		return *theValue;
 	}
 
-	double counter(cvui_block_t& theBlock, int theX, int theY, double *theValue, double theStep, const char *theFormat) {
-		cv::Rect aContentArea(theX + 22, theY, 48, 22);
+	double counter(cvui_block_t& theBlock, int theX, int theY, double *theValue, double theStep, const char *theFormat, int theWidth, int theHeight) {
+		cv::Rect aContentArea(theX + theHeight, theY, theWidth - theHeight * 2, theHeight);
 
-		if (internal::button(theBlock, theX, theY, 22, 22, "-", false)) {
+		if (internal::button(theBlock, theX, theY, theHeight, theHeight, "-", false)) {
 			*theValue -= theStep;
 		}
 
 		sprintf_s(internal::gBuffer, theFormat, *theValue);
 		render::counter(theBlock, aContentArea, internal::gBuffer);
 
-		if (internal::button(theBlock, aContentArea.x + aContentArea.width, theY, 22, 22, "+", false)) {
+		if (internal::button(theBlock, aContentArea.x + aContentArea.width, theY, theHeight, theHeight, "+", false)) {
 			*theValue += theStep;
 		}
 
 		// Update the layout flow
-		cv::Size aSize(22 * 2 + aContentArea.width, aContentArea.height);
+		cv::Size aSize(theHeight * 2 + aContentArea.width, aContentArea.height);
 		updateLayoutFlow(theBlock, aSize);
 
 		return *theValue;
@@ -2260,9 +2260,9 @@ void image(cv::Mat& theWhere, int theX, int theY, cv::Mat& theImage) {
 	return internal::image(internal::gScreen, theX, theY, theImage);
 }
 
-bool checkbox(cv::Mat& theWhere, int theX, int theY, const cv::String& theLabel, bool *theState, unsigned int theColor) {
+bool checkbox(cv::Mat& theWhere, int theX, int theY, const cv::String& theLabel, bool *theState, unsigned int theColor, int theHeight) {
 	internal::gScreen.where = theWhere;
-	return internal::checkbox(internal::gScreen, theX, theY, theLabel, theState, theColor);
+	return internal::checkbox(internal::gScreen, theX, theY, theLabel, theState, theColor, theHeight);
 }
 
 void text(cv::Mat& theWhere, int theX, int theY, const cv::String& theText, double theFontScale, unsigned int theColor) {
@@ -2292,14 +2292,14 @@ void printf(cv::Mat& theWhere, int theX, int theY, const char *theFmt, ...) {
 	internal::text(internal::gScreen, theX, theY, internal::gBuffer, 0.4, 0xCECECE, true);
 }
 
-int counter(cv::Mat& theWhere, int theX, int theY, int *theValue, int theStep, const char *theFormat) {
+int counter(cv::Mat& theWhere, int theX, int theY, int *theValue, int theStep, const char *theFormat, int theWidth, int theHeight) {
 	internal::gScreen.where = theWhere;
-	return internal::counter(internal::gScreen, theX, theY, theValue, theStep, theFormat);
+	return internal::counter(internal::gScreen, theX, theY, theValue, theStep, theFormat, theWidth, theHeight);
 }
 
-double counter(cv::Mat& theWhere, int theX, int theY, double *theValue, double theStep, const char *theFormat) {
+double counter(cv::Mat& theWhere, int theX, int theY, double *theValue, double theStep, const char *theFormat, int theWidth, int theHeight) {
 	internal::gScreen.where = theWhere;
-	return internal::counter(internal::gScreen, theX, theY, theValue, theStep, theFormat);
+	return internal::counter(internal::gScreen, theX, theY, theValue, theStep, theFormat, theWidth, theHeight);
 }
 
 void window(cv::Mat& theWhere, int theX, int theY, int theWidth, int theHeight, const cv::String& theTitle) {
@@ -2406,14 +2406,14 @@ void printf(const char *theFmt, ...) {
 	internal::text(aBlock, aBlock.anchor.x, aBlock.anchor.y, internal::gBuffer, 0.4, 0xCECECE, true);
 }
 
-int counter(int *theValue, int theStep, const char *theFormat) {
+int counter(int *theValue, int theStep, const char *theFormat, int theWidth, int theHeight) {
 	cvui_block_t& aBlock = internal::topBlock();
-	return internal::counter(aBlock, aBlock.anchor.x, aBlock.anchor.y, theValue, theStep, theFormat);
+	return internal::counter(aBlock, aBlock.anchor.x, aBlock.anchor.y, theValue, theStep, theFormat, theWidth, theHeight);
 }
 
-double counter(double *theValue, double theStep, const char *theFormat) {
+double counter(double *theValue, double theStep, const char *theFormat, int theWidth, int theHeight) {
 	cvui_block_t& aBlock = internal::topBlock();
-	return internal::counter(aBlock, aBlock.anchor.x, aBlock.anchor.y, theValue, theStep, theFormat);
+	return internal::counter(aBlock, aBlock.anchor.x, aBlock.anchor.y, theValue, theStep, theFormat, theWidth, theHeight);
 }
 
 void window(int theWidth, int theHeight, const cv::String& theTitle) {

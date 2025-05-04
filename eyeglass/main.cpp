@@ -48,7 +48,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
     int clipLimitValue = -1, medianBlurKSize = -1, morphKSize = -1;
     int clipLimitTrack = 0, medianBlurTrack = 0, morphKTrack = 7;
 
-    int margin = 50, padding = 15, settingWidth = 130, settingHeight = 450;
+    int margin = 48, padding = 15, paddingH = 5, settingWidth = 180, settingHeight = 680;
     int settingX = background.cols - settingWidth - padding, settingY = background.rows - settingHeight - margin;
     settingsRect = { settingX, settingY, settingWidth, settingHeight };
     detector->reset({ 0, 0, frame.cols, frame.rows }, pxToMm);
@@ -72,55 +72,55 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
         cvui::window(background, settingX, settingY, settingWidth, settingHeight, "Setting");
 
         if (onlyContour) {
-            if (cvui::button(background, settingX + padding, settingY + margin, "+")) {
+            if (cvui::button(background, settingX + padding, settingY + margin, settingWidth / 2 - padding, margin, "+")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x, editArea.y + editArea.height / 2, +1);
             }
-            cvui::text(background, settingX + padding, settingY + margin + padding, "L");
-            if (cvui::button(background, settingX + padding + margin, settingY + margin, "-")) {
+            cvui::text(background, settingX + padding, settingY + margin + margin / 2, "L");
+            if (cvui::button(background, settingX + settingWidth / 2, settingY + margin, settingWidth / 2 - padding, margin, "-")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x, editArea.y + editArea.height / 2, -1);
             }
 
-            if (cvui::button(background, settingX + padding, settingY + margin + padding * 2, "+")) {
+            if (cvui::button(background, settingX + padding, settingY + margin + margin + paddingH, settingWidth / 2 - padding, margin, "+")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width, editArea.y + editArea.height / 2, +1);
             }
-            cvui::text(background, settingX + padding, settingY + margin + padding * 3, "R");
-            if (cvui::button(background, settingX + padding + margin, settingY + margin + padding * 2, "-")) {
+            cvui::text(background, settingX + padding, settingY + margin + margin + paddingH + margin / 2, "R");
+            if (cvui::button(background, settingX + settingWidth / 2, settingY + margin + margin + paddingH, settingWidth / 2 - padding, margin, "-")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width, editArea.y + editArea.height / 2, -1);
             }
 
-            if (cvui::button(background, settingX + padding, settingY + margin + padding * 4, "+")) {
+            if (cvui::button(background, settingX + padding, settingY + margin + (margin + paddingH) * 2, settingWidth / 2 - padding, margin, "+")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width / 2, editArea.y, +1);
             }
-            cvui::text(background, settingX + padding, settingY + margin + padding * 5, "T");
-            if (cvui::button(background, settingX + padding + margin, settingY + margin + padding * 4, "-")) {
+            cvui::text(background, settingX + padding, settingY + margin + (margin + paddingH) * 2 + margin / 2, "T");
+            if (cvui::button(background, settingX + settingWidth / 2, settingY + margin + (margin + paddingH) * 2, settingWidth / 2 - padding, margin, "-")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width / 2, editArea.y, -1);
             }
 
-            if (cvui::button(background, settingX + padding, settingY + margin + padding * 6, "+")) {
+            if (cvui::button(background, settingX + padding, settingY + margin + (margin + paddingH) * 3, settingWidth / 2 - padding, margin, "+")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width / 2, editArea.y + editArea.height, +1);
             }
-            cvui::text(background, settingX + padding, settingY + margin + padding * 7, "B");
-            if (cvui::button(background, settingX + padding + margin, settingY + margin + padding * 6, "-")) {
+            cvui::text(background, settingX + padding, settingY + margin + (margin + paddingH) * 3 + margin / 2, "B");
+            if (cvui::button(background, settingX + settingWidth / 2, settingY + margin + (margin + paddingH) * 3, settingWidth / 2 - padding, margin, "-")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width / 2, editArea.y + editArea.height, -1);
             }
 
             double pupilHeight = detector->getPupilHeight(), pupilWidth = detector->getPupilWidth();
             double lastPupiHeight = pupilHeight, lastPupiWidth = pupilWidth;
-            cvui::counter(background, settingX + padding, settingY + margin + padding * 9, &pupilWidth, 0.1, "W:%.1f");
+            cvui::counter(background, settingX + padding, settingY + margin + (margin + paddingH) * 4, &pupilWidth, 0.1, "W:%.1f", settingWidth - padding * 2, margin);
             if (lastPupiWidth != pupilWidth) detector->setPupilWidth(pupilWidth);
 
-            cvui::counter(background, settingX + padding, settingY + margin + padding * 11, &pupilHeight, 0.1, "H:%.1f");
+            cvui::counter(background, settingX + padding, settingY + margin + (margin + paddingH) * 5, &pupilHeight, 0.1, "H:%.1f", settingWidth - padding * 2, margin);
             if (lastPupiHeight != pupilHeight) detector->setPupilHeight(pupilHeight);
 
-            cvui::checkbox(background, settingX + padding, settingY + margin + padding * 13, "Preview", &isPreview);
+            cvui::checkbox(background, settingX + padding, settingY + margin + (margin + paddingH) * 6, "Preview", &isPreview, 0xCECECE, margin / 2);
             if (prePreview != isPreview) {
                 prePreview = isPreview;
                 detector->setPreview(isPreview);
@@ -140,7 +140,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
                 isEdit = true;
         }
 
-        if (cvui::button(background, settingX + padding, settingY + margin + padding * 15, "R-")) {
+        if (cvui::button(background, settingX + padding, settingY + settingHeight - padding - margin - (margin + paddingH) * 4, settingWidth / 2, margin, "R-")) {
             if (detector->onKey('R')) {
                 isEdit = true;
                 refresh = true;
@@ -148,7 +148,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             }
         }
 
-        if (cvui::button(background, settingX + padding + margin, settingY + margin + padding * 15, "R+")) {
+        if (cvui::button(background, settingX + settingWidth / 2, settingY + settingHeight - padding - margin - (margin + paddingH) * 4, settingWidth / 2 - padding, margin, "R+")) {
             if (detector->onKey('R')) {
                 isEdit = true;
                 refresh = true;
@@ -156,17 +156,17 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             }
         }
 
-        if (cvui::button(background, settingX + padding, settingY + margin + padding * 17, "S+")) {
+        if (cvui::button(background, settingX + padding, settingY + settingHeight - padding - margin - (margin + paddingH) * 3, settingWidth / 2 - padding, margin, "S+")) {
             detector->scaleCurrentContour(+1);
             isEdit = true;
         }
 
-        if (cvui::button(background, settingX + padding + margin, settingY + margin + padding * 17, "S-")) {
+        if (cvui::button(background, settingX + settingWidth / 2, settingY + settingHeight - padding - margin - (margin + paddingH) * 3, settingWidth / 2 - padding, margin, "S-")) {
             detector->scaleCurrentContour(-1);
             isEdit = true;
         }
 
-        cvui::checkbox(background, settingX + padding, settingY + margin + padding * 19, "OnlyContour", &onlyContour);
+        cvui::checkbox(background, settingX + padding, settingY + settingHeight - padding - margin - (margin + paddingH) * 2, "OnlyContour", &onlyContour, 0xCECECE, margin / 2);
         if (preOnlyContour != onlyContour) {
             preOnlyContour = onlyContour;
             detector->setOnlyContour(onlyContour);
@@ -174,14 +174,14 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             isPreview = false;
         }
 
-        if (cvui::button(background, settingX + padding, settingY + settingHeight - margin - padding, " FindNext ")) {
+        if (cvui::button(background, settingX + padding, settingY + settingHeight - padding - margin - (margin + paddingH), settingWidth - padding * 2, margin, "FindNext")) {
             if (detector->findNext()) {
                 refresh = true;
                 isEdit = true;
             }
         }
 
-        if (cvui::button(background, settingX + padding, settingY + settingHeight - margin + padding, "   Save   ")) {
+        if (cvui::button(background, settingX + padding, settingY + settingHeight - padding - margin, settingWidth - padding * 2, margin, "Save")) {
             const char* filters[] = { "*.dxf" };
             const char* filename = tinyfd_saveFileDialog(
                 "Save As",
