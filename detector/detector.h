@@ -27,6 +27,7 @@ public:
     bool findNext();
     bool scaleCurrentContour(int N);
     void setOnlyContour(bool state);
+    void setPreview(bool preview);
     bool saveToDxf(std::string filename);
     bool onKey(int key);
     bool onMouse(int event, int x, int y, int flags);
@@ -53,6 +54,7 @@ private:
     double PxToMM;
     double scale;
     bool onlyContour;
+    bool isPreview;
     cv::Point2f rotationCenter;
     std::vector<cv::Point2f> currentContour;
     std::vector<std::vector<cv::Point2f>> eyeglassContours;

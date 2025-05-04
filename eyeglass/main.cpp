@@ -13,6 +13,8 @@ bool onlyContour = false;
 bool preOnlyContour = onlyContour;
 cv::Rect settingsRect = {};
 
+cv::VideoCapture capture;
+
 void mouseCallback(int event, int x, int y, int flags, void* userdata) {
     Detector* detector = static_cast<Detector*>(userdata);
     cv::Point point = cv::Point(x, y);
@@ -30,16 +32,23 @@ void mouseCallback(int event, int x, int y, int flags, void* userdata) {
     }
 }
 
+void getNextFrame(cv::Mat dest) {
+    cv::Mat frame;
+    capture >> frame;
+    if(!frame.empty()) cv::resize(frame, dest, dest.size(), 0, 0, cv::INTER_LINEAR);
+}
+
 int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& isEdit, double pxToMm, void* userdata)
 {
     Detector* detector = static_cast<Detector*>(userdata);
 
     double angle = 0.0;
     bool refresh = false;
+    bool isPreview = false, prePreview = isPreview;
     int clipLimitValue = -1, medianBlurKSize = -1, morphKSize = -1;
     int clipLimitTrack = 0, medianBlurTrack = 0, morphKTrack = 7;
 
-    int margin = 50, padding = 15, settingWidth = 130, settingHeight = 420;
+    int margin = 50, padding = 15, settingWidth = 130, settingHeight = 450;
     int settingX = background.cols - settingWidth - padding, settingY = background.rows - settingHeight - margin;
     settingsRect = { settingX, settingY, settingWidth, settingHeight };
     detector->reset({ 0, 0, frame.cols, frame.rows }, pxToMm);
@@ -56,6 +65,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             detector->detect(detector->rotate(frame.clone(), angle), (clipLimitValue + 1) * 3, (medianBlurKSize << 1) + 1, morphKSize + 1, background);
         }
         else {
+            if(isPreview) getNextFrame(frame);
             detector->drawFrame(detector->rotate(frame.clone(), angle), background, isEdit);
         }
 
@@ -109,6 +119,12 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
 
             cvui::counter(background, settingX + padding, settingY + margin + padding * 11, &pupilHeight, 0.1, "H:%.1f");
             if (lastPupiHeight != pupilHeight) detector->setPupilHeight(pupilHeight);
+
+            cvui::checkbox(background, settingX + padding, settingY + margin + padding * 13, "Preview", &isPreview);
+            if (prePreview != isPreview) {
+                prePreview = isPreview;
+                detector->setPreview(isPreview);
+            }
         }
         else {
             cvui::text(background, settingX + padding, settingY + margin, "Edge Curl");
@@ -124,7 +140,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
                 isEdit = true;
         }
 
-        if (cvui::button(background, settingX + padding, settingY + margin + padding * 14, "R-")) {
+        if (cvui::button(background, settingX + padding, settingY + margin + padding * 15, "R-")) {
             if (detector->onKey('R')) {
                 isEdit = true;
                 refresh = true;
@@ -132,7 +148,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             }
         }
 
-        if (cvui::button(background, settingX + padding + margin, settingY + margin + padding * 14, "R+")) {
+        if (cvui::button(background, settingX + padding + margin, settingY + margin + padding * 15, "R+")) {
             if (detector->onKey('R')) {
                 isEdit = true;
                 refresh = true;
@@ -140,21 +156,22 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             }
         }
 
-        if (cvui::button(background, settingX + padding, settingY + margin + padding * 16, "S+")) {
+        if (cvui::button(background, settingX + padding, settingY + margin + padding * 17, "S+")) {
             detector->scaleCurrentContour(+1);
             isEdit = true;
         }
 
-        if (cvui::button(background, settingX + padding + margin, settingY + margin + padding * 16, "S-")) {
+        if (cvui::button(background, settingX + padding + margin, settingY + margin + padding * 17, "S-")) {
             detector->scaleCurrentContour(-1);
             isEdit = true;
         }
 
-        cvui::checkbox(background, settingX + padding, settingY + margin + padding * 18, "OnlyContour", &onlyContour);
+        cvui::checkbox(background, settingX + padding, settingY + margin + padding * 19, "OnlyContour", &onlyContour);
         if (preOnlyContour != onlyContour) {
             preOnlyContour = onlyContour;
             detector->setOnlyContour(onlyContour);
             isEdit = true;
+            isPreview = false;
         }
 
         if (cvui::button(background, settingX + padding, settingY + settingHeight - margin - padding, " FindNext ")) {
@@ -243,7 +260,6 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
 }
 
 int main(int argc, char* argv[]) {
-	cv::VideoCapture capture;
 	if (argc <= 1)
 		capture.open(cv::CAP_ANY);
 	else

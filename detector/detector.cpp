@@ -37,6 +37,7 @@ void Detector::reset(cv::Rect rect, double pxToMm)
     editArea = rect;
     PxToMM = pxToMm;
     onlyContour = false;
+    isPreview = false;
 
     isEditSelectArea = false;
     selectRect = cv::Rect(0, 0, 0, 0);
@@ -181,7 +182,7 @@ void Detector::drawFrame(cv::Mat frame, cv::Mat background, bool mark)
     fps_.tic();
 
     cv::Mat roi = background(cv::Rect(0, 0, frame.cols, frame.rows));
-    if (onlyContour) frame.setTo(cv::Scalar(0));//缩放轮廓模式不显示图像
+    if (onlyContour && !isPreview) frame.setTo(cv::Scalar(0));//缩放轮廓模式不显示图像
 
     if (frame.channels() > 1) {
         frame.copyTo(roi);
@@ -254,6 +255,10 @@ bool Detector::scaleCurrentContour(int N) {
 
 void Detector::setOnlyContour(bool state) {
     onlyContour = state;
+}
+
+void Detector::setPreview(bool preview) {
+    isPreview = preview;
 }
 
 bool Detector::saveToDxf(std::string filename) {
