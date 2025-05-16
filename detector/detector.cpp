@@ -90,7 +90,7 @@ std::vector<cv::Point2f> Detector::findContourInRect(cv::Mat frame, double clipL
 
     if (!contours.empty()) {
         int maxExternal = findMaxContourId(contours);
-        return smoothContourWithBezier(gaussianSmooth(smoothContourWithBilateral(convertToPoint2f(contours[maxExternal]))));
+        return smoothContourWithSlidingWindow(smoothContourWithBezier(gaussianSmooth(smoothContourWithBilateral(convertToPoint2f(contours[maxExternal])))));
     }
     return {};
 }
@@ -140,7 +140,7 @@ std::vector<cv::Point2f> Detector::findContourInMask(cv::Mat frame, double clipL
 
     if (!contours.empty()) {
         int maxExternal = findMaxContourId(contours);
-        return smoothContourWithBezier(gaussianSmooth(smoothContourWithBilateral(convertToPoint2f(contours[maxExternal]))));
+        return smoothContourWithSlidingWindow(smoothContourWithBezier(gaussianSmooth(smoothContourWithBilateral(convertToPoint2f(contours[maxExternal])))));
     }
     return {};
 }
