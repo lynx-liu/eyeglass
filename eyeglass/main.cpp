@@ -15,6 +15,68 @@ cv::Rect settingsRect = {};
 
 cv::VideoCapture capture;
 
+namespace ui {
+	static inline cv::Scalar bgr(unsigned int rgb) {
+		return cv::Scalar(rgb & 0xFF, (rgb >> 8) & 0xFF, (rgb >> 16) & 0xFF);
+	}
+
+	struct Theme {
+		cv::Scalar panelBg = bgr(0x1F232A);
+		cv::Scalar panelBorder = bgr(0x3A404A);
+		cv::Scalar accent = bgr(0x4AA3FF);
+	};
+
+	static const Theme kTheme{};
+
+	static constexpr int kHeaderH = 56;
+
+	static inline void filledRoundedRect(cv::Mat& img, const cv::Rect& r, const cv::Scalar& color, int radius) {
+		const int rad = std::max(0, std::min({ radius, r.width / 2, r.height / 2 }));
+		if (rad == 0) {
+			cv::rectangle(img, r, color, cv::FILLED, cv::LINE_AA);
+			return;
+		}
+
+		cv::rectangle(img, cv::Rect(r.x + rad, r.y, r.width - 2 * rad, r.height), color, cv::FILLED, cv::LINE_AA);
+		cv::rectangle(img, cv::Rect(r.x, r.y + rad, r.width, r.height - 2 * rad), color, cv::FILLED, cv::LINE_AA);
+		cv::circle(img, cv::Point(r.x + rad, r.y + rad), rad, color, cv::FILLED, cv::LINE_AA);
+		cv::circle(img, cv::Point(r.x + r.width - rad, r.y + rad), rad, color, cv::FILLED, cv::LINE_AA);
+		cv::circle(img, cv::Point(r.x + rad, r.y + r.height - rad), rad, color, cv::FILLED, cv::LINE_AA);
+		cv::circle(img, cv::Point(r.x + r.width - rad, r.y + r.height - rad), rad, color, cv::FILLED, cv::LINE_AA);
+	}
+
+	static inline void roundedRect(cv::Mat& img, const cv::Rect& r, const cv::Scalar& color, int thickness, int radius) {
+		const int rad = std::max(0, std::min({ radius, r.width / 2, r.height / 2 }));
+		if (rad == 0) {
+			cv::rectangle(img, r, color, thickness, cv::LINE_AA);
+			return;
+		}
+
+		cv::line(img, cv::Point(r.x + rad, r.y), cv::Point(r.x + r.width - rad, r.y), color, thickness, cv::LINE_AA);
+		cv::line(img, cv::Point(r.x + rad, r.y + r.height), cv::Point(r.x + r.width - rad, r.y + r.height), color, thickness, cv::LINE_AA);
+		cv::line(img, cv::Point(r.x, r.y + rad), cv::Point(r.x, r.y + r.height - rad), color, thickness, cv::LINE_AA);
+		cv::line(img, cv::Point(r.x + r.width, r.y + rad), cv::Point(r.x + r.width, r.y + r.height - rad), color, thickness, cv::LINE_AA);
+
+		cv::ellipse(img, cv::Point(r.x + rad, r.y + rad), cv::Size(rad, rad), 180, 0, 90, color, thickness, cv::LINE_AA);
+		cv::ellipse(img, cv::Point(r.x + r.width - rad, r.y + rad), cv::Size(rad, rad), 270, 0, 90, color, thickness, cv::LINE_AA);
+		cv::ellipse(img, cv::Point(r.x + r.width - rad, r.y + r.height - rad), cv::Size(rad, rad), 0, 0, 90, color, thickness, cv::LINE_AA);
+		cv::ellipse(img, cv::Point(r.x + rad, r.y + r.height - rad), cv::Size(rad, rad), 90, 0, 90, color, thickness, cv::LINE_AA);
+	}
+
+	static inline void panel(cv::Mat& img, const cv::Rect& r, const char* title) {
+		filledRoundedRect(img, r, kTheme.panelBg, 12);
+		roundedRect(img, r, kTheme.panelBorder, 1, 12);
+
+		cvui::text(img, r.x + 14, r.y + 18, title, 0.55, 0xE6E6E6);
+		cv::line(img, cv::Point(r.x + 12, r.y + kHeaderH), cv::Point(r.x + r.width - 12, r.y + kHeaderH), kTheme.panelBorder, 1, cv::LINE_AA);
+	}
+
+	static inline void sectionTitle(cv::Mat& img, int x, int y, const char* title) {
+		cvui::text(img, x, y, title, 0.45, 0xA9B0BA);
+		cv::line(img, cv::Point(x, y + 16), cv::Point(x + 90, y + 16), kTheme.accent, 1, cv::LINE_AA);
+	}
+}
+
 void mouseCallback(int event, int x, int y, int flags, void* userdata) {
     Detector* detector = static_cast<Detector*>(userdata);
     cv::Point point = cv::Point(x, y);
@@ -48,7 +110,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
     int clipLimitValue = -1, medianBlurKSize = -1, morphKSize = -1;
     int clipLimitTrack = 0, medianBlurTrack = 0, morphKTrack = 7;
 
-    int margin = 48, padding = 15, paddingH = 5, settingWidth = 180, settingHeight = 680;
+    int margin = 40, padding = 16, paddingH = 10, settingWidth = 240, settingHeight = 720;
     int settingX = background.cols - settingWidth - padding, settingY = background.rows - settingHeight - margin;
     settingsRect = { settingX, settingY, settingWidth, settingHeight };
     detector->reset({ 0, 0, frame.cols, frame.rows }, pxToMm);
@@ -69,78 +131,92 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             detector->drawFrame(detector->rotate(frame.clone(), angle), background, isEdit);
         }
 
-        cvui::window(background, settingX, settingY, settingWidth, settingHeight, "Setting");
+        ui::panel(background, settingsRect, "Settings");
+
+        const int innerX = settingX + padding;
+        const int innerY = settingY + ui::kHeaderH + 14;
+        const int innerW = settingWidth - padding * 2;
+        const int rowH = 38;
 
         if (onlyContour) {
-            if (cvui::button(background, settingX + padding, settingY + margin, settingWidth / 2 - padding, margin, "+")) {
+            ui::sectionTitle(background, innerX, innerY - 26, "Edit contour");
+
+            if (cvui::button(background, innerX, innerY + 0 * (rowH + paddingH), innerW / 2 - paddingH, rowH, "+")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x, editArea.y + editArea.height / 2, +1);
             }
-            cvui::text(background, settingX + padding, settingY + margin + margin / 2, "L");
-            if (cvui::button(background, settingX + settingWidth / 2, settingY + margin, settingWidth / 2 - padding, margin, "-")) {
+            cvui::text(background, innerX + 6, innerY + 0 * (rowH + paddingH) + 12, "Left", 0.45, 0xA9B0BA);
+            if (cvui::button(background, innerX + innerW / 2, innerY + 0 * (rowH + paddingH), innerW / 2, rowH, "-")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x, editArea.y + editArea.height / 2, -1);
             }
 
-            if (cvui::button(background, settingX + padding, settingY + margin + margin + paddingH, settingWidth / 2 - padding, margin, "+")) {
+            if (cvui::button(background, innerX, innerY + 1 * (rowH + paddingH), innerW / 2 - paddingH, rowH, "+")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width, editArea.y + editArea.height / 2, +1);
             }
-            cvui::text(background, settingX + padding, settingY + margin + margin + paddingH + margin / 2, "R");
-            if (cvui::button(background, settingX + settingWidth / 2, settingY + margin + margin + paddingH, settingWidth / 2 - padding, margin, "-")) {
+            cvui::text(background, innerX + 6, innerY + 1 * (rowH + paddingH) + 12, "Right", 0.45, 0xA9B0BA);
+            if (cvui::button(background, innerX + innerW / 2, innerY + 1 * (rowH + paddingH), innerW / 2, rowH, "-")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width, editArea.y + editArea.height / 2, -1);
             }
 
-            if (cvui::button(background, settingX + padding, settingY + margin + (margin + paddingH) * 2, settingWidth / 2 - padding, margin, "+")) {
+            if (cvui::button(background, innerX, innerY + 2 * (rowH + paddingH), innerW / 2 - paddingH, rowH, "+")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width / 2, editArea.y, +1);
             }
-            cvui::text(background, settingX + padding, settingY + margin + (margin + paddingH) * 2 + margin / 2, "T");
-            if (cvui::button(background, settingX + settingWidth / 2, settingY + margin + (margin + paddingH) * 2, settingWidth / 2 - padding, margin, "-")) {
+            cvui::text(background, innerX + 6, innerY + 2 * (rowH + paddingH) + 12, "Top", 0.45, 0xA9B0BA);
+            if (cvui::button(background, innerX + innerW / 2, innerY + 2 * (rowH + paddingH), innerW / 2, rowH, "-")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width / 2, editArea.y, -1);
             }
 
-            if (cvui::button(background, settingX + padding, settingY + margin + (margin + paddingH) * 3, settingWidth / 2 - padding, margin, "+")) {
+            if (cvui::button(background, innerX, innerY + 3 * (rowH + paddingH), innerW / 2 - paddingH, rowH, "+")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width / 2, editArea.y + editArea.height, +1);
             }
-            cvui::text(background, settingX + padding, settingY + margin + (margin + paddingH) * 3 + margin / 2, "B");
-            if (cvui::button(background, settingX + settingWidth / 2, settingY + margin + (margin + paddingH) * 3, settingWidth / 2 - padding, margin, "-")) {
+            cvui::text(background, innerX + 6, innerY + 3 * (rowH + paddingH) + 12, "Bottom", 0.45, 0xA9B0BA);
+            if (cvui::button(background, innerX + innerW / 2, innerY + 3 * (rowH + paddingH), innerW / 2, rowH, "-")) {
                 cv::Rect editArea = detector->getEditArea();
                 detector->onMouse(cv::EVENT_MOUSEWHEEL, editArea.x + editArea.width / 2, editArea.y + editArea.height, -1);
             }
 
             double pupilHeight = detector->getPupilHeight(), pupilWidth = detector->getPupilWidth();
             double lastPupiHeight = pupilHeight, lastPupiWidth = pupilWidth;
-            cvui::counter(background, settingX + padding, settingY + margin + (margin + paddingH) * 4, &pupilWidth, 0.1, "W:%.1f", settingWidth - padding * 2, margin);
+            ui::sectionTitle(background, innerX, innerY + 4 * (rowH + paddingH) - 20, "Pupil");
+            cvui::counter(background, innerX, innerY + 4 * (rowH + paddingH), &pupilWidth, 0.1, "Width: %.1f", innerW, rowH);
             if (lastPupiWidth != pupilWidth) detector->setPupilWidth(pupilWidth);
 
-            cvui::counter(background, settingX + padding, settingY + margin + (margin + paddingH) * 5, &pupilHeight, 0.1, "H:%.1f", settingWidth - padding * 2, margin);
+            cvui::counter(background, innerX, innerY + 5 * (rowH + paddingH), &pupilHeight, 0.1, "Height: %.1f", innerW, rowH);
             if (lastPupiHeight != pupilHeight) detector->setPupilHeight(pupilHeight);
 
-            cvui::checkbox(background, settingX + padding, settingY + margin + (margin + paddingH) * 6, "Preview", &isPreview, 0xCECECE, margin / 2);
+            ui::sectionTitle(background, innerX, innerY + 6 * (rowH + paddingH) - 20, "View");
+            cvui::checkbox(background, innerX, innerY + 6 * (rowH + paddingH), "Live preview", &isPreview, 0xCECECE, rowH / 2);
             if (prePreview != isPreview) {
                 prePreview = isPreview;
                 detector->setPreview(isPreview);
             }
         }
         else {
-            cvui::text(background, settingX + padding, settingY + margin, "Edge Curl");
-            if (cvui::trackbar(background, settingX + padding * 2, settingY + margin + padding, settingWidth - padding * 3, &medianBlurTrack, 0, 9, 0, "%.0Lf"))
+            ui::sectionTitle(background, innerX, innerY - 26, "Detection");
+
+            cvui::text(background, innerX, innerY, "Edge Curl", 0.45, 0xE6E6E6);
+            if (cvui::trackbar(background, innerX + padding, innerY + 16, innerW - padding, &medianBlurTrack, 0, 9, 0, "%.0Lf"))
                 isEdit = true;
 
-            cvui::text(background, settingX + padding, settingY + (margin + padding) * 2, "Morph Kernel");
-            if (cvui::trackbar(background, settingX + padding * 2, settingY + (margin + padding) * 2 + padding, settingWidth - padding * 3, &morphKTrack, 0, 9, 1, "%.0Lf"))
+            cvui::text(background, innerX, innerY + 1 * (rowH + paddingH) + 8, "Morph Kernel", 0.45, 0xE6E6E6);
+            if (cvui::trackbar(background, innerX + padding, innerY + 1 * (rowH + paddingH) + 24, innerW - padding, &morphKTrack, 0, 9, 1, "%.0Lf"))
                 isEdit = true;
 
-            cvui::text(background, settingX + padding, settingY + (margin + padding) * 3, "clipLimit");
-            if (cvui::trackbar(background, settingX + padding * 2, settingY + (margin + padding) * 3 + padding, settingWidth - padding * 3, &clipLimitTrack, 0, 9, 1, "%.0Lf"))
+            cvui::text(background, innerX, innerY + 2 * (rowH + paddingH) + 16, "CLAHE clipLimit", 0.45, 0xE6E6E6);
+            if (cvui::trackbar(background, innerX + padding, innerY + 2 * (rowH + paddingH) + 32, innerW - padding, &clipLimitTrack, 0, 9, 1, "%.0Lf"))
                 isEdit = true;
         }
 
-        if (cvui::button(background, settingX + padding, settingY + settingHeight - padding - margin - (margin + paddingH) * 4, settingWidth / 2, margin, "R-")) {
+        const int footerY = settingY + settingHeight - padding - rowH * 5 - paddingH * 4;
+        ui::sectionTitle(background, innerX, footerY - 26, "Actions");
+
+        if (cvui::button(background, innerX, footerY + 0 * (rowH + paddingH), innerW / 2 - paddingH, rowH, "Rotate -")) {
             if (detector->onKey('R')) {
                 isEdit = true;
                 refresh = true;
@@ -148,7 +224,7 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             }
         }
 
-        if (cvui::button(background, settingX + settingWidth / 2, settingY + settingHeight - padding - margin - (margin + paddingH) * 4, settingWidth / 2 - padding, margin, "R+")) {
+        if (cvui::button(background, innerX + innerW / 2, footerY + 0 * (rowH + paddingH), innerW / 2, rowH, "Rotate +")) {
             if (detector->onKey('R')) {
                 isEdit = true;
                 refresh = true;
@@ -156,17 +232,17 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             }
         }
 
-        if (cvui::button(background, settingX + padding, settingY + settingHeight - padding - margin - (margin + paddingH) * 3, settingWidth / 2 - padding, margin, "S+")) {
+        if (cvui::button(background, innerX, footerY + 1 * (rowH + paddingH), innerW / 2 - paddingH, rowH, "Scale +")) {
             detector->scaleCurrentContour(+1);
             isEdit = true;
         }
 
-        if (cvui::button(background, settingX + settingWidth / 2, settingY + settingHeight - padding - margin - (margin + paddingH) * 3, settingWidth / 2 - padding, margin, "S-")) {
+        if (cvui::button(background, innerX + innerW / 2, footerY + 1 * (rowH + paddingH), innerW / 2, rowH, "Scale -")) {
             detector->scaleCurrentContour(-1);
             isEdit = true;
         }
 
-        cvui::checkbox(background, settingX + padding, settingY + settingHeight - padding - margin - (margin + paddingH) * 2, "OnlyContour", &onlyContour, 0xCECECE, margin / 2);
+        cvui::checkbox(background, innerX, footerY + 2 * (rowH + paddingH), "Contour edit mode", &onlyContour, 0xCECECE, rowH / 2);
         if (preOnlyContour != onlyContour) {
             preOnlyContour = onlyContour;
             detector->setOnlyContour(onlyContour);
@@ -174,14 +250,14 @@ int refreshUI(cv::Mat frame, cv::Mat background, cv::VideoWriter writer, bool& i
             isPreview = false;
         }
 
-        if (cvui::button(background, settingX + padding, settingY + settingHeight - padding - margin - (margin + paddingH), settingWidth - padding * 2, margin, "FindNext")) {
+        if (cvui::button(background, innerX, footerY + 3 * (rowH + paddingH), innerW, rowH, "Find next")) {
             if (detector->findNext()) {
                 refresh = true;
                 isEdit = true;
             }
         }
 
-        if (cvui::button(background, settingX + padding, settingY + settingHeight - padding - margin, settingWidth - padding * 2, margin, "Save")) {
+        if (cvui::button(background, innerX, footerY + 4 * (rowH + paddingH), innerW, rowH, "Export DXF")) {
             const char* filters[] = { "*.dxf" };
             const char* filename = tinyfd_saveFileDialog(
                 "Save As",
